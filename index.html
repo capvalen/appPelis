@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Peliteca - Infocat</title>
-  <link rel="icon" type="image/png" href="assets/martian.png">
+  <link rel="icon" type="image/png" href="/assets/martian.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 	<link rel="manifest" href="/manifest.json">
 <style>
@@ -509,7 +509,7 @@
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <img class="logo" src="assets/martian.png" alt="Peliteca">
+    <img class="logo" src="/assets/martian.png" alt="Peliteca">
     <h1>Peliteca ~ Infocat</h1>
   </div>
 </header>
@@ -605,7 +605,7 @@
   <div class="modal modal-aleatorio">
     <h2><i class="ti ti-dice-5"></i> Película aleatoria</h2>
     <div class="alea-busqueda" id="aleaBusqueda">
-      <img id="aleaDado" src="assets/dice_1.png" alt="Dado">
+      <img id="aleaDado" src="/assets/dice_1.png" alt="Dado">
       <span><i class="ti ti-player-track-next"></i> Buscando...</span>
     </div>
     <div class="alea-resultado" id="aleaResultado"></div>
@@ -726,7 +726,7 @@
         const div = document.createElement('div');
         div.className = 'carrusel-item';
         const img = document.createElement('img');
-        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : 'assets/movies.png';
+        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/movies-1.png';
         img.alt = p.pelicula;
         img.loading = 'lazy';
         div.appendChild(img);
@@ -906,10 +906,10 @@
     // efecto de dados: alterna dice_1 / dice_2 en bucle mientras "sortean"
     clearInterval(aleaIntervalo);
     aleaCara = 1;
-    $aleaDado.src = 'assets/dice_1.png';
+    $aleaDado.src = '/assets/dice_1.png';
     aleaIntervalo = setInterval(() => {
       aleaCara = aleaCara === 1 ? 2 : 1;
-      $aleaDado.src = 'assets/dice_' + aleaCara + '.png';
+      $aleaDado.src = '/assets/dice_' + aleaCara + '.png';
     }, 250);
     // efecto de búsqueda por 1 segundo, luego elige al azar
     setTimeout(() => {
@@ -919,7 +919,7 @@
       aleaActual = elegida;
       $aleaBusqueda.style.display = 'none';
       $aleaResultado.innerHTML =
-        '<img class="alea-img" src="assets/movies.png" alt="Película">' +
+        '<img class="alea-img" src="/assets/movies-1.png" alt="Película">' +
         '<div class="alea-hora">Es hora de ver...</div>' +
         '<div class="alea-titulo-fila">' +
           '<div class="alea-titulo">' + capitalizar(elegida.pelicula) + '</div>' +
