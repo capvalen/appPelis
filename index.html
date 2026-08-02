@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peliteca</title>
+  <link rel="icon" type="image/png" href="assets/martian.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+	<link rel="manifest" href="/manifest.json">
+<style>
+  :root {
+    --morado: #965bef;
+    --morado-oscuro: #7a3fd0;
+    --morado-suave: #ae7bf2;
+    --morado-claro: #e9dcfb;
+    --morado-mas-claro: #f4eefd;
+    --texto: #1f2937;
+    --texto-suave: #6b7280;
+    --borde: #e5e7eb;
+    --rojo: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #ffffff;
+    color: var(--texto);
+    min-height: 100vh;
+  }
+  header {
+    background: #fff;
+    color: var(--morado);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(150, 91, 239, .18);
+  }
+  header h1 { font-size: 1.35rem; font-weight: 700; color: var(--morado); }
+  header .logo { height: 40px; width: auto; border-radius: 8px; }
+  header h1 span { font-weight: 400; opacity: .8; }
+  .toolbar {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  input[type="text"], select, textarea {
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: .95rem;
+    color: var(--texto);
+    background: #fff;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: var(--morado);
+    box-shadow: 0 0 0 3px var(--morado-claro);
+  }
+  #buscar { flex: 1; min-width: 220px; }
+  .buscar-wrap { position: relative; flex: 1; min-width: 220px; display: flex; }
+  .buscar-wrap input { flex: 1; padding-right: 36px; }
+  .buscar-wrap .btn-limpiar {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--texto-suave);
+    padding: 4px;
+    font-size: .95rem;
+    border-radius: 6px;
+  }
+  .buscar-wrap .btn-limpiar:hover { background: var(--morado-claro); color: var(--morado-oscuro); }
+  .buscar-wrap .btn-limpiar i { display: block; }
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, transform .05s;
+  }
+  button:active { transform: scale(.97); }
+  .btn-primario { background: var(--morado); color: #fff; }
+  .btn-primario:hover { background: var(--morado-oscuro); }
+  .btn-secundario { background: var(--morado-claro); color: var(--morado-oscuro); }
+  .btn-secundario:hover { background: #dcc9f9; }
+  .btn-icono { background: transparent; padding: 8px 10px; }
+  .btn-icono i { font-size: 1.25rem; display: block; }
+  button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-icono.editar { color: var(--morado); }
+  .btn-icono.editar:hover { background: var(--morado-claro); }
+  .btn-icono.borrar { color: var(--rojo); }
+  .btn-icono.borrar:hover { background: #fee2e2; }
+  .contador {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    padding: 0 24px;
+    color: var(--texto-suave);
+    font-size: .9rem;
+  }
+  .filtros {
+    max-width: 1100px;
+    margin: 16px auto 0;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .fila-filtros {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .filtros .etiqueta-filtros {
+    color: var(--texto-suave);
+    font-weight: 300;
+    font-size: .9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 4px;
+  }
+  .chip {
+    border: 1px solid var(--borde);
+    background: #fff;
+    color: var(--texto-suave);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip:hover { border-color: var(--morado); color: var(--morado); }
+  .chip.activo {
+    background: var(--morado);
+    border-color: var(--morado);
+    color: #fff;
+  }
+  #lista {
+    max-width: 1100px;
+    margin: 16px auto 48px;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+  }
+  .tarjeta {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+  }
+  .tarjeta:hover {
+    border-color: var(--morado);
+    box-shadow: 0 8px 24px rgba(150, 91, 239, .22);
+    transform: translateY(-2px);
+  }
+  .tarjeta .nombre { font-weight: 600; font-size: 1rem; line-height: 1.35; }
+  .tarjeta .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tarjeta .dato { color: var(--texto-suave); font-size: .85rem; }
+  .tarjeta .nota {
+    margin-left: auto;
+    background: var(--morado-claro);
+    color: var(--morado-oscuro);
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: .85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .tarjeta .nota .estrella { font-size: .9rem; }
+  .tarjeta .acciones { display: flex; gap: 4px; justify-content: flex-end; }
+  .badge {
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .badge.Visto { background: var(--morado); color: #fff; }
+  .badge.Falta { background: var(--morado-mas-claro); color: var(--morado-oscuro); }
+  .badge.Ver { background: var(--morado-claro); color: var(--morado-oscuro); }
+  .badge.Urgente { background: var(--morado-oscuro); color: #fff; }
+  .badge.Viendo { background: #dbeafe; color: #1d4ed8; }
+  .badge.clase { background: #f3f4f6; color: var(--texto-suave); }
+  .badge.clase i { display: inline-block; vertical-align: -1px; }
+  .vacio {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--texto-suave);
+    padding: 48px 0;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 41, 55, .85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity .25s ease;
+  }
+  .overlay.abierto { display: flex; }
+  .overlay.animado { opacity: 1; }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    transform: scale(0.95) translateY(12px);
+    opacity: 0;
+    transition: transform .25s ease, opacity .25s ease;
+  }
+  .overlay.animado .modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+  }
+  .modal h2 { font-size: 1.2rem; margin-bottom: 18px; color: var(--morado-oscuro); }
+  .campo { margin-bottom: 14px; }
+  .campo label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; color: var(--texto); }
+  .campo input[type="text"], .campo select, .campo textarea { width: 100%; }
+  .campo-con-boton { display: flex; gap: 8px; }
+  .campo-con-boton input { flex: 1; }
+  .campo-con-boton .btn-copiar { flex-shrink: 0; }
+  .campo input[readonly] {
+    background: #f3f4f6;
+    color: var(--texto-suave);
+    cursor: not-allowed;
+  }
+  .campo textarea { resize: vertical; min-height: 70px; }
+  .modal-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .modal-detalle .titulo { font-size: 1.2rem; font-weight: 700; color: var(--morado-oscuro); margin-bottom: 6px; }
+  .modal-detalle .titulo-fila { display: flex; align-items: flex-start; gap: 8px; }
+  .modal-detalle .titulo-fila .titulo { flex: 1; margin-bottom: 6px; }
+  .btn-copiar {
+    background: #f3f4f6;
+    color: var(--texto-suave);
+    padding: 4px 8px;
+    font-size: 1rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .btn-copiar:hover { background: #e5e7eb; color: var(--texto); }
+  .btn-copiar i { display: block; }
+  .modal-detalle .sub { color: var(--texto-suave); font-size: .9rem; margin-bottom: 18px; }
+  #dPoster { display: none; margin-bottom: 14px; }
+  #dPoster img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .modal-detalle .modal-acciones { justify-content: space-between; }
+  .modal-detalle .modal-acciones .btn-secundario {
+    background: #fff;
+    color: var(--texto-suave);
+    border: 1px solid var(--borde);
+  }
+  .modal-detalle .modal-acciones .btn-secundario:hover { background: #f9fafb; }
+  .modal-detalle .modal-acciones .btn-secundario i { font-size: 1.1rem; }
+  .modal-aleatorio h2 { display: flex; align-items: center; gap: 8px; }
+  .modal-aleatorio .alea-busqueda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    padding: 28px 0;
+    color: var(--texto-suave);
+    font-size: 1.05rem;
+  }
+  .modal-aleatorio .alea-busqueda img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+  }
+  .modal-aleatorio .alea-busqueda i { animation: gira 1s linear infinite; }
+  @keyframes gira { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+  .modal-aleatorio .alea-resultado { display: none; }
+  .modal-aleatorio .alea-resultado.visible { display: block; }
+  .modal-aleatorio .alea-resultado .alea-titulo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--morado-oscuro);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .modal-aleatorio .alea-titulo-fila {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .modal-aleatorio .alea-titulo-fila .alea-titulo { margin-bottom: 0; }
+  .modal-aleatorio .alea-img {
+    display: block;
+    width: 90%;
+    max-height: 260px;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+  .modal-aleatorio .alea-hora {
+    text-align: center;
+    color: var(--texto-suave);
+    font-size: .95rem;
+    margin-bottom: 10px;
+  }
+  .modal-aleatorio .alea-resultado .alea-meta { display: flex; justify-content: center; gap: 8px; }
+  .detalle-fila { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--borde); }
+  .detalle-fila:last-of-type { border-bottom: none; }
+  .detalle-fila .etiqueta { flex: 0 0 80px; font-size: .85rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .03em; padding-top: 2px; }
+  .detalle-fila .valor { flex: 1; font-size: .95rem; word-break: break-word; }
+  .estrella { color: #facc15; font-size: 1.05rem; display: inline-block; }
+  .tarjeta .meta .estrella { vertical-align: middle; }
+  .detalle-fila .valor .estrella { vertical-align: middle; }
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--morado-oscuro);
+    color: #fff;
+    padding: 16px 22px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+    opacity: 0;
+    transition: transform .25s, opacity .25s;
+    z-index: 100;
+    width: 90%;
+    max-width: 460px;
+    text-align: center;
+  }
+  #toast .ti { margin-right: 8px; font-size: 1.15rem; vertical-align: -2px; }
+  #toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .cargando { text-align: center; color: var(--texto-suave); padding: 48px 0; grid-column: 1 / -1; }
+  #btnSubir {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--morado);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(150, 91, 239, .4);
+    font-size: 1.5rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+  }
+  #btnSubir:hover { background: var(--morado-oscuro); }
+  #btnSubir.visible { display: inline-flex; }
+  #btnAleatorio {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--morado);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(150, 91, 239, .4);
+    font-size: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 40;
+  }
+  #btnAleatorio:hover { background: var(--morado-oscuro); }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <img class="logo" src="assets/martian.png" alt="Peliteca">
+    <h1>Peliteca ~ Infocat</h1>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="buscar-wrap">
+    <input type="text" id="buscar" placeholder="Buscar por película o dato...">
+    <button class="btn-limpiar" id="btnLimpiar" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
+  </div>
+  <button class="btn-primario" id="btnAgregar"><i class="ti ti-plus"></i> Agregar</button>
+</div>
+<div class="filtros" id="filtros"></div>
+<div class="contador" id="contador"></div>
+<div id="lista"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitulo">Agregar película</h2>
+    <form id="formulario">
+      <div class="campo" id="campoId" style="display:none">
+        <label for="fId">ID</label>
+        <input type="text" id="fId" readonly>
+      </div>
+      <div class="campo">
+        <label for="fPelicula">Película</label>
+        <div class="campo-con-boton">
+          <input type="text" id="fPelicula" required>
+          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar título"><i class="ti ti-clipboard"></i></button>
+        </div>
+      </div>
+      <div class="campo">
+        <label for="fPoster">Poster</label>
+        <input type="text" id="fPoster">
+      </div>
+      <div class="campo">
+        <label for="fDato">Dato</label>
+        <input type="text" id="fDato">
+      </div>
+      <div class="campo">
+        <label for="fClase">Clase</label>
+        <select id="fClase">
+          <option value="película">Película</option>
+          <option value="serie">Serie</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="fVisto">Visto</label>
+        <select id="fVisto">
+          <option>Visto</option>
+          <option>Falta ver</option>
+          <option>Ver otra vez</option>
+          <option>Urgente</option>
+          <option>Viendo</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="fNota">Nota</label>
+        <input type="text" id="fNota">
+      </div>
+      <div class="modal-acciones">
+        <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="btn-primario" id="btnGuardar"><i class="ti ti-device-floppy"></i> Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="overlayDetalle">
+  <div class="modal modal-detalle">
+    <div id="dPoster"></div>
+    <div class="titulo-fila">
+      <div class="titulo" id="dPelicula"></div>
+      <button type="button" class="btn-copiar" id="btnCopiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>
+    </div>
+    <div class="sub" id="dVisto"></div>
+    <div class="detalle-fila"><span class="etiqueta">Clase</span><span class="valor" id="dClase"></span></div>
+    <div class="detalle-fila"><span class="etiqueta">Dato</span><span class="valor" id="dDato"></span></div>
+    <div class="detalle-fila"><span class="etiqueta">Nota</span><span class="valor" id="dNota"></span></div>
+    <div class="modal-acciones">
+      <button type="button" class="btn-secundario" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
+      <button type="button" class="btn-primario" id="btnEditarDesdeDetalle"><i class="ti ti-pencil"></i> Editar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlayAleatorio">
+  <div class="modal modal-aleatorio">
+    <h2><i class="ti ti-dice-5"></i> Película aleatoria</h2>
+    <div class="alea-busqueda" id="aleaBusqueda">
+      <img id="aleaDado" src="assets/dice_1.png" alt="Dado">
+      <span><i class="ti ti-player-track-next"></i> Buscando...</span>
+    </div>
+    <div class="alea-resultado" id="aleaResultado"></div>
+    <div class="modal-acciones">
+      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<button id="btnAleatorio" title="Película aleatoria"><i class="ti ti-dice-5"></i></button>
+<button id="btnSubir" title="Ir al inicio"><i class="ti ti-arrow-up"></i></button>
+
+<script>
+  const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
+
+  let POSTER_API = 'ecba96d8';
+  /* fetch('.env')
+    .then(r => r.text())
+    .then(t => {
+      const m = t.match(/^POSTER_API=(.+)$/m);
+      if (m) POSTER_API = m[1].trim();
+    })
+    .catch(() => {}); */
+
+  const $lista = document.getElementById('lista');
+  const $buscar = document.getElementById('buscar');
+  const $contador = document.getElementById('contador');
+  const $filtros = document.getElementById('filtros');
+  const $overlay = document.getElementById('overlay');
+  const $formulario = document.getElementById('formulario');
+  const $modalTitulo = document.getElementById('modalTitulo');
+  const $toast = document.getElementById('toast');
+  const $btnSubir = document.getElementById('btnSubir');
+  const $overlayDetalle = document.getElementById('overlayDetalle');
+  const $dPoster = document.getElementById('dPoster');
+  const $dPelicula = document.getElementById('dPelicula');
+  const $btnCopiar = document.getElementById('btnCopiar');
+  const $dClase = document.getElementById('dClase');
+  const $dVisto = document.getElementById('dVisto');
+  const $dDato = document.getElementById('dDato');
+  const $dNota = document.getElementById('dNota');
+  const $overlayAleatorio = document.getElementById('overlayAleatorio');
+  const $aleaBusqueda = document.getElementById('aleaBusqueda');
+  const $aleaResultado = document.getElementById('aleaResultado');
+  const $btnAleaDetalle = document.getElementById('btnAleaDetalle');
+  const $aleaDado = document.getElementById('aleaDado');
+
+  let peliculas = [];
+  let filtro = '';
+  let filtroVisto = '';
+  let filtroClase = '';
+  let modo = 'crear';
+  let idEditando = null;
+  let detalleActual = null;
+  let aleaActual = null;
+  let aleaIntervalo = null;
+  let aleaCara = 1;
+
+  function normalizar(s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function capitalizar(s) {
+    if (!s) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  async function api(path = '', options = {}) {
+    const res = await fetch(BASE + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (!res.ok) {
+      let msg = 'Error ' + res.status;
+      try {
+        const e = await res.json();
+        msg = e.message || msg;
+      } catch (_) {}
+      throw new Error(msg);
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function cargar() {
+    let page = 1;
+    let items = [];
+    while (true) {
+      const data = await api('?page=' + page + '&perPage=500&sort=pelicula');
+      items = items.concat(data.items);
+      if (page >= data.totalPages) break;
+      page++;
+    }
+    peliculas = items;
+    render();
+  }
+
+  function badge(visto) {
+    const cls = visto === 'Visto' ? 'Visto'
+      : visto === 'Falta ver' ? 'Falta'
+      : visto === 'Ver otra vez' ? 'Ver'
+      : visto === 'Viendo' ? 'Viendo'
+      : 'Urgente';
+    return '<span class="badge ' + cls + '">' + visto + '</span>';
+  }
+
+  function badgeClase(clase) {
+    const esSerie = (clase || '').toLowerCase() === 'serie';
+    const icono = esSerie ? 'ti ti-armchair' : 'ti ti-device-tv';
+    const texto = esSerie ? 'Serie' : 'Película';
+    return '<span class="badge clase"><i class="' + icono + '"></i> ' + texto + '</span>';
+  }
+
+  function tarjeta(p) {
+    const div = document.createElement('div');
+    div.className = 'tarjeta';
+    div.innerHTML =
+      '<div class="nombre"></div>' +
+      '<div class="meta">' + badge(p.visto) + badgeClase(p.clase) +
+        (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
+        (p.nota ? '<span class="nota">'  + ' <i class="ti ti-star-filled estrella"></i> ' + p.nota + '</span>' : '') +
+      '</div>' +
+      '<div class="acciones">' +
+        '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
+        '<button class="btn-icono borrar" title="Eliminar"><i class="ti ti-trash"></i></button>' +
+      '</div>';
+    div.querySelector('.nombre').textContent = capitalizar(p.pelicula);
+    div.onclick = () => abrirDetalle(p);
+    div.querySelector('.editar').onclick = (e) => { e.stopPropagation(); abrirEditar(p); };
+    div.querySelector('.borrar').onclick = (e) => { e.stopPropagation(); eliminar(p.id, p.pelicula); };
+    return div;
+  }
+
+  function render() {
+    const q = normalizar(filtro);
+    const visibles = peliculas.filter(p => {
+      if (filtroVisto && p.visto !== filtroVisto) return false;
+      if (filtroClase && (p.clase || 'película') !== filtroClase) return false;
+      if (!q) return true;
+      return normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q);
+    });
+    let texto;
+    if (filtroClase === 'película') {
+      texto = '#' + visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
+    } else if (filtroClase === 'serie') {
+      texto = '#' + visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
+    } else {
+      texto = '#' + visibles.length + ' películas y series';
+    }
+    $contador.textContent = texto;
+    $lista.innerHTML = '';
+    if (!peliculas.length) {
+      const v = document.createElement('div');
+      v.className = 'vacio';
+      v.textContent = 'Cargando...';
+      $lista.appendChild(v);
+      return;
+    }
+    if (!visibles.length) {
+      const v = document.createElement('div');
+      v.className = 'vacio';
+      v.textContent = 'Sin resultados para "' + filtro + '"';
+      $lista.appendChild(v);
+      return;
+    }
+    for (const p of visibles) $lista.appendChild(tarjeta(p));
+  }
+
+  function mostrarToast(msg) {
+    $toast.innerHTML = '<i class="ti ti-location-check"></i>' + msg;
+    $toast.classList.add('visible');
+    clearTimeout(mostrarToast._t);
+    mostrarToast._t = setTimeout(() => $toast.classList.remove('visible'), 2500);
+  }
+
+  function abrirOverlay($el) {
+    $el.style.display = 'flex';
+    $el.offsetHeight; // forzar reflow
+    $el.classList.add('abierto', 'animado');
+  }
+  function cerrarOverlay($el) {
+    $el.classList.remove('animado');
+    setTimeout(() => {
+      $el.classList.remove('abierto');
+      $el.style.display = '';
+    }, 250);
+  }
+
+  function abrirModal() { abrirOverlay($overlay); }
+  function cerrarModal() { cerrarOverlay($overlay); }
+
+  function abrirDetalle(p) {
+    detalleActual = p;
+    $dPelicula.textContent = capitalizar(p.pelicula);
+    $dClase.innerHTML = badgeClase(p.clase);
+    $dVisto.innerHTML = badge(p.visto);
+    $dDato.textContent = p.dato ? p.dato : '—';
+    $dNota.innerHTML = p.nota
+      ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
+      : '—';
+    mostrarPoster(p.poster);
+    abrirOverlay($overlayDetalle);
+  }
+
+  function mostrarPoster(imdbID) {
+    $dPoster.innerHTML = '';
+    $dPoster.style.display = 'none';
+    if (!imdbID) return;
+    fetch('https://www.omdbapi.com/?i=' + encodeURIComponent(imdbID) + '&apikey=' + POSTER_API)
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.Response === 'False' || !data.Poster || data.Poster === 'N/A') return;
+        const img = document.createElement('img');
+        img.src = data.Poster;
+        img.alt = 'Póster';
+        img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.style.display = 'none'; };
+        $dPoster.appendChild(img);
+        $dPoster.style.display = 'block';
+      })
+      .catch(() => {});
+  }
+
+  function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
+
+  function abrirAleatorio() {
+    const candidatas = peliculas.filter(p => p.visto === 'Falta ver' || p.visto === 'Ver otra vez' || p.visto === 'Urgente' || p.visto === 'Viendo');
+    aleaActual = null;
+    $btnAleaDetalle.style.display = 'none';
+    $aleaResultado.classList.remove('visible');
+    $aleaResultado.innerHTML = '';
+    $aleaBusqueda.style.display = 'flex';
+    if (!candidatas.length) {
+      $aleaBusqueda.innerHTML = '<i class="ti ti-alert-triangle"></i> No hay películas pendientes';
+      abrirOverlay($overlayAleatorio);
+      return;
+    }
+    abrirOverlay($overlayAleatorio);
+    // efecto de dados: alterna dice_1 / dice_2 en bucle mientras "sortean"
+    clearInterval(aleaIntervalo);
+    aleaCara = 1;
+    $aleaDado.src = 'assets/dice_1.png';
+    aleaIntervalo = setInterval(() => {
+      aleaCara = aleaCara === 1 ? 2 : 1;
+      $aleaDado.src = 'assets/dice_' + aleaCara + '.png';
+    }, 250);
+    // efecto de búsqueda por 1 segundo, luego elige al azar
+    setTimeout(() => {
+      clearInterval(aleaIntervalo);
+      aleaIntervalo = null;
+      const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
+      aleaActual = elegida;
+      $aleaBusqueda.style.display = 'none';
+      $aleaResultado.innerHTML =
+        '<img class="alea-img" src="assets/movies.png" alt="Película">' +
+        '<div class="alea-hora">Es hora de ver...</div>' +
+        '<div class="alea-titulo-fila">' +
+          '<div class="alea-titulo">' + capitalizar(elegida.pelicula) + '</div>' +
+          '<button type="button" class="btn-copiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>' +
+        '</div>' +
+        '<div class="alea-meta">' + badge(elegida.visto) + badgeClase(elegida.clase) + '</div>';
+      $aleaResultado.querySelector('.btn-copiar').onclick = () => {
+        navigator.clipboard.writeText(elegida.pelicula).then(() => {
+          mostrarToast('Título copiado');
+        }).catch(() => {
+          mostrarToast('Error al copiar');
+        });
+      };
+      $aleaResultado.classList.add('visible');
+      $btnAleaDetalle.style.display = '';
+    }, 1000);
+  }
+
+  function cerrarAleatorio() {
+    clearInterval(aleaIntervalo);
+    aleaIntervalo = null;
+    cerrarOverlay($overlayAleatorio);
+  }
+
+  function abrirCrear() {
+    modo = 'crear';
+    idEditando = null;
+    $formulario.reset();
+    $formulario.fClase.value = 'película';
+    $formulario.fVisto.value = 'Falta ver';
+    $modalTitulo.textContent = 'Agregar película';
+    document.getElementById('campoId').style.display = 'none';
+    abrirModal();
+    $formulario.fPelicula.focus();
+  }
+
+  function abrirEditar(p) {
+    modo = 'editar';
+    idEditando = p.id;
+    $formulario.fId.value = p.id;
+    document.getElementById('campoId').style.display = '';
+    $formulario.fPelicula.value = p.pelicula;
+    $formulario.fPoster.value = p.poster || '';
+    $formulario.fClase.value = (p.clase || 'película').toLowerCase() === 'serie' ? 'serie' : 'película';
+    $formulario.fVisto.value = p.visto;
+    $formulario.fDato.value = p.dato || '';
+    $formulario.fNota.value = p.nota || '';
+    $modalTitulo.textContent = 'Editar película';
+    abrirModal();
+    $formulario.fPelicula.focus();
+  }
+
+  async function guardar(e) {
+    e.preventDefault();
+    const body = {
+      pelicula: $formulario.fPelicula.value.trim(),
+      poster: $formulario.fPoster.value.trim(),
+      clase: $formulario.fClase.value,
+      visto: $formulario.fVisto.value,
+      dato: $formulario.fDato.value.trim(),
+      nota: $formulario.fNota.value.trim()
+    };
+    try {
+      if (modo === 'crear') {
+        await api('', { method: 'POST', body: JSON.stringify(body) });
+      } else {
+        await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
+      }
+      cerrarModal();
+      mostrarToast('Guardado correctamente');
+      await cargar();
+    } catch (err) {
+      mostrarToast('Error: ' + err.message);
+    }
+  }
+
+  async function eliminar(id, nombre) {
+    if (!confirm('¿Eliminar "' + nombre + '"?')) return;
+    try {
+      await api('/' + id, { method: 'DELETE' });
+      mostrarToast('Eliminado');
+      await cargar();
+    } catch (err) {
+      mostrarToast('Error: ' + err.message);
+    }
+  }
+
+  const ESTADOS = ['Visto', 'Falta ver', 'Ver otra vez', 'Urgente', 'Viendo'];
+  const CLASES = [
+    { valor: 'película', etiqueta: 'Película', icono: 'ti ti-device-tv' },
+    { valor: 'serie', etiqueta: 'Serie', icono: 'ti ti-armchair' }
+  ];
+
+  function construirFiltros() {
+    $filtros.innerHTML = '';
+    const filaEstado = document.createElement('div');
+    filaEstado.className = 'fila-filtros';
+    const etiqueta = document.createElement('span');
+    etiqueta.className = 'etiqueta-filtros';
+    etiqueta.innerHTML = '<i class="ti ti-filter-code"></i> Filtros:';
+    filaEstado.appendChild(etiqueta);
+    const botones = [{ etiqueta: 'Todos', valor: '' }]
+      .concat(ESTADOS.map(v => ({ etiqueta: v, valor: v })));
+    for (const b of botones) {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (filtroVisto === b.valor ? ' activo' : '');
+      btn.textContent = b.etiqueta;
+      btn.onclick = () => {
+        filtroVisto = filtroVisto === b.valor ? '' : b.valor;
+        construirFiltros();
+        render();
+      };
+      filaEstado.appendChild(btn);
+    }
+    $filtros.appendChild(filaEstado);
+
+    const filaClase = document.createElement('div');
+    filaClase.className = 'fila-filtros';
+    const etiquetaClase = document.createElement('span');
+    etiquetaClase.className = 'etiqueta-filtros';
+    etiquetaClase.innerHTML = '<i class="ti ti-category"></i> Clase:';
+    filaClase.appendChild(etiquetaClase);
+    for (const c of CLASES) {
+      const activo = filtroClase === c.valor;
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (activo ? ' activo' : '');
+      const i = document.createElement('i');
+      i.className = c.icono;
+      btn.appendChild(i);
+      btn.appendChild(document.createTextNode(' ' + c.etiqueta));
+      btn.onclick = () => {
+        filtroClase = filtroClase === c.valor ? '' : c.valor;
+        construirFiltros();
+        render();
+      };
+      filaClase.appendChild(btn);
+    }
+    $filtros.appendChild(filaClase);
+  }
+
+  let debounceTimer = null;
+  $buscar.addEventListener('input', e => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      filtro = e.target.value.trim();
+      render();
+    }, 300);
+  });
+
+  $buscar.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    clearTimeout(debounceTimer);
+    filtro = e.target.value.trim();
+    render();
+  });
+
+  window.addEventListener('scroll', () => {
+    $btnSubir.classList.toggle('visible', window.scrollY > 300);
+  });
+  $btnSubir.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  document.getElementById('btnAgregar').onclick = abrirCrear;
+  document.getElementById('btnLimpiar').onclick = () => {
+    $buscar.value = '';
+    clearTimeout(debounceTimer);
+    filtro = '';
+    render();
+    $buscar.focus();
+  };
+  document.getElementById('btnAleatorio').onclick = abrirAleatorio;
+  $overlayAleatorio.addEventListener('click', e => { if (e.target === $overlayAleatorio) cerrarAleatorio(); });
+  document.getElementById('btnAleaDetalle').onclick = () => {
+    cerrarAleatorio();
+    setTimeout(() => {
+      if (aleaActual) abrirDetalle(aleaActual);
+    }, 250);
+  };
+  document.getElementById('btnCancelar').onclick = cerrarModal;
+  $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
+  $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
+  document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
+  document.getElementById('btnCopiarPelicula').onclick = () => {
+    const texto = $formulario.fPelicula.value;
+    if (!texto) return;
+    navigator.clipboard.writeText(texto).then(() => {
+      mostrarToast('Título copiado');
+    }).catch(() => {
+      mostrarToast('Error al copiar');
+    });
+  };
+  $btnCopiar.onclick = () => {
+    if (!detalleActual) return;
+    navigator.clipboard.writeText(detalleActual.pelicula).then(() => {
+      mostrarToast('Título copiado');
+    }).catch(() => {
+      mostrarToast('Error al copiar');
+    });
+  };
+  document.getElementById('btnEditarDesdeDetalle').onclick = () => {
+    cerrarDetalle();
+    setTimeout(() => {
+      if (detalleActual) abrirEditar(detalleActual);
+    }, 250);
+  };
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    cerrarDetalle();
+    cerrarModal();
+    cerrarAleatorio();
+  });
+  $formulario.addEventListener('submit', guardar);
+
+  construirFiltros();
+
+  cargar().catch(err => {
+    $lista.innerHTML = '';
+    const v = document.createElement('div');
+    v.className = 'vacio';
+    v.textContent = 'No se pudo cargar: ' + err.message;
+    $lista.appendChild(v);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(cat > /tmp/commandcode-1000/-home-karl-Proyectos-appPelis/b18fcb4c-cb97-49ae-be5e-47de90743d48/scratchpad/gen_insert.py << 'EOF' import csv, random, string, sys csv.field_size_limit(sys.maxsize) random.seed(42) def gen_id(): return ''.join(random.choices(string.ascii_letters + string.digits, k=15)) def esc(v): return v.replace(\"'\", \"''\") rows = [] with open('vista.csv', newline='', encoding='utf-8') as f: for r in csv.reader(f): if not r or not r[0].strip(): continue if r[0].strip().lower() == 'n°': continue num = r[0].strip() pelicula = r[1].strip() visto = r[2].strip() or 'Falta ver' dato = r[3].strip() if len(r) > 3 else '' nota = r[4].strip() if len(r) > 4 else '' if visto not in ('Visto', 'Falta ver', 'Ver otra vez', 'Urgente'): sys.stderr.write(f'Visto invalido: {num} -> {visto}\\n') visto = 'Falta ver' rows.append((num, pelicula, visto, dato, nota)) with open('insert_peliculas.sql', 'w', encoding='utf-8') as out: out.write('-- Inserts generados desde vista.csv ({} registros)\\n'.format(len(rows))) out.write(\"INSERT INTO peliculas (id, pelicula, visto, dato, nota) VALUES\\n\") lines = [] for i, (num, pelicula, visto, dato, nota) in enumerate(rows): vals = \"'{}','{}','{}',{},{}\".format( gen_id(), esc(pelicula), visto, (\"'\"+esc(dato)+\"'\") if dato else \"''\", (\"'\"+esc(nota)+\"'\") if nota else 'NULL') lines.append(\"({}){}\".format(vals, ',' if i < len(rows)-1 else ';')) out.write('\\n'.join(lines) + '\\n') print('Total filas:', len(rows)) EOF python3 /tmp/commandcode-1000/-home-karl-Proyectos-appPelis/b18fcb4c-cb97-49ae-be5e-47de90743d48/scratchpad/gen_insert.py && rm /tmp/commandcode-1000/-home-karl-Proyectos-appPelis/b18fcb4c-cb97-49ae-be5e-47de90743d48/scratchpad/gen_insert.py)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
