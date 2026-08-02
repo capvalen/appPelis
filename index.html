@@ -110,7 +110,8 @@
     margin: 16px auto 0;
     padding: 0 24px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 10px;
     flex-wrap: wrap;
   }
@@ -501,7 +502,7 @@
 <div id="toast"></div>
 
 <button id="btnAleatorio" title="Película aleatoria"><i class="ti ti-dice-5"></i></button>
-<button id="btnSubir" title="Ir al inicio"><i class="ti ti-arrow-up"></i></button>
+<button id="btnSubir" title="Ir al inicio"><i class="ti ti-chevron-up"></i></button>
 
 <script>
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
@@ -633,11 +634,11 @@
     });
     let texto;
     if (filtroClase === 'película') {
-      texto = '#' + visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
+      texto = visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
     } else if (filtroClase === 'serie') {
-      texto = '#' + visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
+      texto = visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
     } else {
-      texto = '#' + visibles.length + ' películas y series';
+      texto = visibles.length + ' películas y series';
     }
     $contador.textContent = texto;
     $lista.innerHTML = '';
@@ -807,14 +808,18 @@
       nota: $formulario.fNota.value.trim()
     };
     try {
+      let registro;
       if (modo === 'crear') {
-        await api('', { method: 'POST', body: JSON.stringify(body) });
+        registro = await api('', { method: 'POST', body: JSON.stringify(body) });
       } else {
-        await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
+        registro = await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
       }
-      cerrarModal();
       mostrarToast('Guardado correctamente');
       await cargar();
+      cerrarModal();
+      setTimeout(() => {
+        if (registro) abrirDetalle(registro);
+      }, 250);
     } catch (err) {
       mostrarToast('Error: ' + err.message);
     }
@@ -862,6 +867,7 @@
 
     const filaClase = document.createElement('div');
     filaClase.className = 'fila-filtros';
+    filaClase.style.marginLeft = 'auto';
     const etiquetaClase = document.createElement('span');
     etiquetaClase.className = 'etiqueta-filtros';
     etiquetaClase.innerHTML = '<i class="ti ti-category"></i> Clase:';
