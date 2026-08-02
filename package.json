@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-		"dev": "vite",
-  	"build": "vite build",
+    "dev": "vite",
+    "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -13,12 +13,12 @@
     "url": "git+https://github.com/capvalen/appPelis.git"
   },
   "keywords": [],
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/capvalen/appPelis/issues"
   },
   "homepage": "https://github.com/capvalen/appPelis#readme",
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.50.0",
     "vite": "^8.2.0"
   }
 }
