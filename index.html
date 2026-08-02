@@ -726,7 +726,7 @@
         const div = document.createElement('div');
         div.className = 'carrusel-item';
         const img = document.createElement('img');
-        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/movies-1.png';
+        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/movies.webp';
         img.alt = p.pelicula;
         img.loading = 'lazy';
         div.appendChild(img);
@@ -919,7 +919,7 @@
       aleaActual = elegida;
       $aleaBusqueda.style.display = 'none';
       $aleaResultado.innerHTML =
-        '<img class="alea-img" src="/assets/movies-1.png" alt="Película">' +
+        '<img class="alea-img" src="/assets/movies.webp" alt="Película">' +
         '<div class="alea-hora">Es hora de ver...</div>' +
         '<div class="alea-titulo-fila">' +
           '<div class="alea-titulo">' + capitalizar(elegida.pelicula) + '</div>' +
