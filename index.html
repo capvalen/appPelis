@@ -267,6 +267,15 @@
   .btn-copiar i { display: block; }
   .modal-detalle .sub { color: var(--texto-suave); font-size: .9rem; margin-bottom: 18px; }
   #dPoster { display: none; margin-bottom: 14px; }
+  #dPoster.tiene-poster { display: block; }
+  #dPoster.sin-poster {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    background: var(--morado-mas-claro);
+    border-radius: 10px;
+  }
   #dPoster img {
     width: 100%;
     max-height: 420px;
@@ -329,6 +338,46 @@
     margin-bottom: 10px;
   }
   .modal-aleatorio .alea-resultado .alea-meta { display: flex; justify-content: center; gap: 8px; }
+  .modal-poster .grid-poster {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .modal-poster .grid-poster img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .15s, transform .15s;
+  }
+  .modal-poster .grid-poster img:hover {
+    border-color: var(--morado);
+    transform: scale(1.03);
+  }
+  .modal-poster .sin-poster {
+    text-align: center;
+    color: var(--texto-suave);
+    padding: 8px 0;
+    font-size: .95rem;
+  }
+  .btn-buscar-portada {
+    background: transparent;
+    color: var(--texto-suave);
+    border: 1px dashed var(--texto-suave);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: .85rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .btn-buscar-portada:hover {
+    background: var(--morado-claro);
+    color: var(--morado-oscuro);
+    border-color: var(--morado);
+  }
   .detalle-fila { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--borde); }
   .detalle-fila:last-of-type { border-bottom: none; }
   .detalle-fila .etiqueta { flex: 0 0 80px; font-size: .85rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .03em; padding-top: 2px; }
@@ -469,13 +518,14 @@
 
 <div class="overlay" id="overlayDetalle">
   <div class="modal modal-detalle">
-    <div id="dPoster"></div>
+    <div id="dPoster">
+      <button type="button" class="btn-buscar-portada" id="btnBuscarPortada"><i class="ti ti-photo-search"></i> Buscar portada</button>
+    </div>
     <div class="titulo-fila">
       <div class="titulo" id="dPelicula"></div>
       <button type="button" class="btn-copiar" id="btnCopiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>
     </div>
     <div class="sub" id="dVisto"></div>
-    <div class="detalle-fila"><span class="etiqueta">Clase</span><span class="valor" id="dClase"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Dato</span><span class="valor" id="dDato"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Nota</span><span class="valor" id="dNota"></span></div>
     <div class="modal-acciones">
@@ -499,22 +549,25 @@
   </div>
 </div>
 
+<div class="overlay" id="overlayPoster">
+  <div class="modal modal-poster">
+    <h2>Elige un póster</h2>
+    <div id="posterGrid" class="grid-poster"></div>
+    <div class="modal-acciones">
+      <button type="button" class="btn-secundario" id="btnCerrarPoster">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <button id="btnAleatorio" title="Película aleatoria"><i class="ti ti-dice-5"></i></button>
 <button id="btnSubir" title="Ir al inicio"><i class="ti ti-chevron-up"></i></button>
 
-<script>
+<script type="module">
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
 
-  let POSTER_API = 'ecba96d8';
-  /* fetch('.env')
-    .then(r => r.text())
-    .then(t => {
-      const m = t.match(/^POSTER_API=(.+)$/m);
-      if (m) POSTER_API = m[1].trim();
-    })
-    .catch(() => {}); */
+  const TMDB_TOKEN = import.meta.env.VITE_API_TMDB || '';
 
   const $lista = document.getElementById('lista');
   const $buscar = document.getElementById('buscar');
@@ -529,7 +582,6 @@
   const $dPoster = document.getElementById('dPoster');
   const $dPelicula = document.getElementById('dPelicula');
   const $btnCopiar = document.getElementById('btnCopiar');
-  const $dClase = document.getElementById('dClase');
   const $dVisto = document.getElementById('dVisto');
   const $dDato = document.getElementById('dDato');
   const $dNota = document.getElementById('dNota');
@@ -538,6 +590,8 @@
   const $aleaResultado = document.getElementById('aleaResultado');
   const $btnAleaDetalle = document.getElementById('btnAleaDetalle');
   const $aleaDado = document.getElementById('aleaDado');
+  const $overlayPoster = document.getElementById('overlayPoster');
+  const $posterGrid = document.getElementById('posterGrid');
 
   let peliculas = [];
   let filtro = '';
@@ -546,6 +600,7 @@
   let modo = 'crear';
   let idEditando = null;
   let detalleActual = null;
+  let posterRegistro = null;
   let aleaActual = null;
   let aleaIntervalo = null;
   let aleaCara = 1;
@@ -685,8 +740,7 @@
   function abrirDetalle(p) {
     detalleActual = p;
     $dPelicula.textContent = capitalizar(p.pelicula);
-    $dClase.innerHTML = badgeClase(p.clase);
-    $dVisto.innerHTML = badge(p.visto);
+    $dVisto.innerHTML = badge(p.visto) + badgeClase(p.clase);
     $dDato.textContent = p.dato ? p.dato : '—';
     $dNota.innerHTML = p.nota
       ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
@@ -695,22 +749,26 @@
     abrirOverlay($overlayDetalle);
   }
 
-  function mostrarPoster(imdbID) {
+  function mostrarPoster(poster) {
     $dPoster.innerHTML = '';
-    $dPoster.style.display = 'none';
-    if (!imdbID) return;
-    fetch('https://www.omdbapi.com/?i=' + encodeURIComponent(imdbID) + '&apikey=' + POSTER_API)
-      .then(r => r.json())
-      .then(data => {
-        if (!data || data.Response === 'False' || !data.Poster || data.Poster === 'N/A') return;
-        const img = document.createElement('img');
-        img.src = data.Poster;
-        img.alt = 'Póster';
-        img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.style.display = 'none'; };
-        $dPoster.appendChild(img);
-        $dPoster.style.display = 'block';
-      })
-      .catch(() => {});
+    $dPoster.className = '';
+    if (!poster) {
+      $dPoster.className = 'sin-poster';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-buscar-portada';
+      btn.id = 'btnBuscarPortada';
+      btn.innerHTML = '<i class="ti ti-photo-search"></i> Buscar portada';
+      btn.onclick = buscarPortadaDesdeDetalle;
+      $dPoster.appendChild(btn);
+      return;
+    }
+    $dPoster.className = 'tiene-poster';
+    const img = document.createElement('img');
+    img.src = 'https://image.tmdb.org/t/p/w500/' + poster;
+    img.alt = 'Póster';
+    img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.className = ''; };
+    $dPoster.appendChild(img);
   }
 
   function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
@@ -796,6 +854,81 @@
     abrirModal();
     $formulario.fPelicula.focus();
   }
+
+  async function buscarPosterTMDb(titulo) {
+    if (!TMDB_TOKEN) throw new Error('Token TMDB no configurado');
+    const url = 'https://api.themoviedb.org/3/search/movie?query=' +
+      encodeURIComponent(titulo) +
+      '&include_adult=false&language=es&page=1';
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: 'Bearer ' + TMDB_TOKEN
+      }
+    });
+    if (!res.ok) throw new Error('Error TMDB ' + res.status);
+    return res.json();
+  }
+
+  async function buscarPortadaDesdeDetalle() {
+    if (!detalleActual) return;
+    try {
+      const data = await buscarPosterTMDb(detalleActual.pelicula);
+      if (!data) return;
+      if (data.total_results === 1 && data.results && data.results.length === 1) {
+        const poster = data.results[0].poster_path;
+        if (poster) {
+          await api('/' + detalleActual.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
+          detalleActual.poster = poster;
+          mostrarToast('Portada actualizada');
+          await cargar();
+          cerrarOverlay($overlayDetalle);
+          setTimeout(() => abrirDetalle(detalleActual), 250);
+        }
+      } else if (data.results && data.results.length > 1) {
+        abrirSelectorPoster(data.results, detalleActual);
+      }
+    } catch (err) {
+      mostrarToast('Error: ' + err.message);
+    }
+  }
+
+  function abrirSelectorPoster(results, registro) {
+    posterRegistro = registro;
+    $posterGrid.innerHTML = '';
+    const primeros = results.slice(0, 6);
+    const conPoster = primeros.filter(r => r.poster_path);
+    if (!conPoster.length) {
+      const v = document.createElement('div');
+      v.className = 'sin-poster';
+      v.textContent = 'Sin pósters disponibles';
+      $posterGrid.appendChild(v);
+    } else {
+      for (const r of conPoster) {
+        const img = document.createElement('img');
+        img.src = 'https://image.tmdb.org/t/p/w500/' + r.poster_path;
+        img.alt = r.title || 'Póster';
+        img.loading = 'lazy';
+        img.onclick = async () => {
+          try {
+            await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster: r.poster_path }) });
+            registro.poster = r.poster_path;
+            mostrarToast('Póster guardado');
+            cerrarOverlay($overlayPoster);
+            await cargar();
+            setTimeout(() => abrirDetalle(registro), 250);
+          } catch (err) {
+            mostrarToast('Error guardando póster: ' + err.message);
+          }
+        };
+        $posterGrid.appendChild(img);
+      }
+    }
+    abrirOverlay($overlayPoster);
+  }
+
+  function cerrarSelectorPoster() { cerrarOverlay($overlayPoster); }
 
   async function guardar(e) {
     e.preventDefault();
@@ -931,6 +1064,8 @@
   $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
   $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
   document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
+  document.getElementById('btnCerrarPoster').onclick = cerrarSelectorPoster;
+  $overlayPoster.addEventListener('click', e => { if (e.target === $overlayPoster) cerrarSelectorPoster(); });
   document.getElementById('btnCopiarPelicula').onclick = () => {
     const texto = $formulario.fPelicula.value;
     if (!texto) return;
@@ -958,6 +1093,7 @@
     if (e.key !== 'Escape') return;
     cerrarDetalle();
     cerrarModal();
+    cerrarSelectorPoster();
     cerrarAleatorio();
   });
   $formulario.addEventListener('submit', guardar);
