@@ -47,6 +47,64 @@
     gap: 12px;
     flex-wrap: wrap;
   }
+  .carrusel-wrap {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    padding: 0 24px;
+  }
+  .carrusel-titulo {
+    font-size: .85rem;
+    color: var(--texto-suave);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .carrusel {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+  }
+  .carrusel::-webkit-scrollbar { height: 6px; }
+  .carrusel::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 3px; }
+  .carrusel .carrusel-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    cursor: pointer;
+    transition: transform .15s;
+  }
+  .carrusel .carrusel-item:hover { transform: scale(1.05); }
+  .carrusel .carrusel-item img {
+    height: 180px;
+    width: auto;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  @media (max-width: 640px) {
+    .carrusel .carrusel-item {
+      width: calc((100% - 20px) / 3);
+    }
+    .carrusel .carrusel-item img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2 / 3;
+    }
+  }
+  @media (min-width: 641px) {
+    .carrusel {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      overflow: visible;
+      scroll-snap-type: none;
+    }
+    .carrusel .carrusel-item img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 2 / 3;
+    }
+  }
   input[type="text"], select, textarea {
     border: 1px solid var(--borde);
     border-radius: 10px;
@@ -120,6 +178,9 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+  }
+  @media (max-width: 640px) {
+    .fila-filtros { margin-left: 0 !important; }
   }
   .filtros .etiqueta-filtros {
     color: var(--texto-suave);
@@ -453,6 +514,11 @@
   </div>
 </header>
 
+<div class="carrusel-wrap" id="carruselWrap">
+  <div class="carrusel-titulo"><i class="ti ti-swipe"></i> Visto últimamente</div>
+  <div class="carrusel" id="carrusel"></div>
+</div>
+
 <div class="toolbar">
   <div class="buscar-wrap">
     <input type="text" id="buscar" placeholder="Buscar por película o dato...">
@@ -592,6 +658,8 @@
   const $aleaDado = document.getElementById('aleaDado');
   const $overlayPoster = document.getElementById('overlayPoster');
   const $posterGrid = document.getElementById('posterGrid');
+  const $carrusel = document.getElementById('carrusel');
+  const $carruselWrap = document.getElementById('carruselWrap');
 
   let peliculas = [];
   let filtro = '';
@@ -631,17 +699,63 @@
   }
 
   async function cargar() {
+    $carruselWrap.style.display = 'none';
     let page = 1;
     let items = [];
     while (true) {
-      const data = await api('?page=' + page + '&perPage=500&sort=pelicula');
+      const data = await api('?page=' + page + '&perPage=500&sort=-created');
       items = items.concat(data.items);
       if (page >= data.totalPages) break;
       page++;
     }
     peliculas = items;
     render();
+    cargarCarrusel();
   }
+
+  async function cargarCarrusel() {
+    try {
+      const data = await api('?perPage=10&filter=(visto="Visto")&sort=-updated');
+      $carrusel.innerHTML = '';
+      if (!data.items || !data.items.length) {
+        $carruselWrap.style.display = 'none';
+        return;
+      }
+      $carruselWrap.style.display = '';
+      for (const p of data.items) {
+        const div = document.createElement('div');
+        div.className = 'carrusel-item';
+        const img = document.createElement('img');
+        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : 'assets/movies.png';
+        img.alt = p.pelicula;
+        img.loading = 'lazy';
+        div.appendChild(img);
+        div.onclick = () => abrirDetalle(p);
+        $carrusel.appendChild(div);
+      }
+      iniciarAutoScroll();
+    } catch (_) {
+      $carruselWrap.style.display = 'none';
+    }
+  }
+
+  let carruselTimer = null;
+  function iniciarAutoScroll() {
+    clearInterval(carruselTimer);
+    if (window.innerWidth > 640) return;
+    carruselTimer = setInterval(() => {
+      const maxScroll = $carrusel.scrollWidth - $carrusel.clientWidth;
+      if ($carrusel.scrollLeft >= maxScroll) {
+        $carrusel.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        $carrusel.scrollBy({ left: $carrusel.clientWidth, behavior: 'smooth' });
+      }
+    }, 3500);
+  }
+  window.addEventListener('resize', () => {
+    clearInterval(carruselTimer);
+    if ($carruselWrap.style.display !== 'none') iniciarAutoScroll();
+  });
 
   function badge(visto) {
     const cls = visto === 'Visto' ? 'Visto'
@@ -710,6 +824,9 @@
       v.textContent = 'Sin resultados para "' + filtro + '"';
       $lista.appendChild(v);
       return;
+    }
+    if (ordenAZ) {
+      visibles.sort((a, b) => a.pelicula.localeCompare(b.pelicula, 'es'));
     }
     for (const p of visibles) $lista.appendChild(tarjeta(p));
   }
@@ -974,6 +1091,7 @@
     { valor: 'película', etiqueta: 'Película', icono: 'ti ti-device-tv' },
     { valor: 'serie', etiqueta: 'Serie', icono: 'ti ti-armchair' }
   ];
+  let ordenAZ = false;
 
   function construirFiltros() {
     $filtros.innerHTML = '';
@@ -996,6 +1114,16 @@
       };
       filaEstado.appendChild(btn);
     }
+    // chip de orden
+    const chipOrden = document.createElement('button');
+    chipOrden.className = 'chip' + (ordenAZ ? ' activo' : '');
+    chipOrden.innerHTML = '<i class="ti ti-sort-a-z"></i> A-Z';
+    chipOrden.onclick = () => {
+      ordenAZ = !ordenAZ;
+      construirFiltros();
+      render();
+    };
+    filaEstado.appendChild(chipOrden);
     $filtros.appendChild(filaEstado);
 
     const filaClase = document.createElement('div');
