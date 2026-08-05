@@ -105,7 +105,7 @@
       aspect-ratio: 2 / 3;
     }
   }
-  input[type="text"], select, textarea {
+  input[type="text"], input[type="number"], select, textarea {
     border: 1px solid var(--borde);
     border-radius: 10px;
     padding: 10px 12px;
@@ -115,7 +115,7 @@
     outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
-  input[type="text"]:focus, select:focus, textarea:focus {
+  input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
     border-color: var(--morado);
     box-shadow: 0 0 0 3px var(--morado-claro);
   }
@@ -149,6 +149,12 @@
   .btn-primario:hover { background: var(--morado-oscuro); }
   .btn-secundario { background: var(--morado-claro); color: var(--morado-oscuro); }
   .btn-secundario:hover { background: #dcc9f9; }
+  .btn-volver {
+    background: #fff;
+    color: var(--texto-suave);
+    border: 1px solid var(--borde);
+  }
+  .btn-volver:hover { background: #f9fafb; }
   .btn-icono { background: transparent; padding: 8px 10px; }
   .btn-icono i { font-size: 1.25rem; display: block; }
   button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
@@ -301,7 +307,7 @@
   .modal h2 { font-size: 1.2rem; margin-bottom: 18px; color: var(--morado-oscuro); }
   .campo { margin-bottom: 14px; }
   .campo label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; color: var(--texto); }
-  .campo input[type="text"], .campo select, .campo textarea { width: 100%; }
+  .campo input[type="text"], .campo input[type="number"], .campo select, .campo textarea { width: 100%; }
   .campo-con-boton { display: flex; gap: 8px; }
   .campo-con-boton input { flex: 1; }
   .campo-con-boton .btn-copiar { flex-shrink: 0; }
@@ -311,7 +317,12 @@
     cursor: not-allowed;
   }
   .campo textarea { resize: vertical; min-height: 70px; }
-  .modal-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  #btnEliminarPoster {
+    padding: 6px 12px;
+    font-size: .85rem;
+    width: fit-content;
+  }
+  .modal-acciones { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
   .modal-detalle .titulo { font-size: 1.2rem; font-weight: 700; color: var(--morado-oscuro); margin-bottom: 6px; }
   .modal-detalle .titulo-fila { display: flex; align-items: flex-start; gap: 8px; }
   .modal-detalle .titulo-fila .titulo { flex: 1; margin-bottom: 6px; }
@@ -534,34 +545,31 @@
   <div class="modal">
     <h2 id="modalTitulo">Agregar película</h2>
     <form id="formulario">
-      <div class="campo" id="campoId" style="display:none">
-        <label for="fId">ID</label>
-        <input type="text" id="fId" readonly>
-      </div>
+      <input type="hidden" id="fId">
       <div class="campo">
-        <label for="fPelicula">Película</label>
-        <div class="campo-con-boton">
-          <input type="text" id="fPelicula" required>
-          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar título"><i class="ti ti-clipboard"></i></button>
-        </div>
-      </div>
-      <div class="campo">
-        <label for="fPoster">Poster</label>
-        <input type="text" id="fPoster">
-      </div>
-      <div class="campo">
-        <label for="fDato">Dato</label>
-        <input type="text" id="fDato">
-      </div>
-      <div class="campo">
-        <label for="fClase">Clase</label>
+        <label for="fClase"><i class="ti ti-category"></i> Clase</label>
         <select id="fClase">
           <option value="película">Película</option>
           <option value="serie">Serie</option>
         </select>
       </div>
       <div class="campo">
-        <label for="fVisto">Visto</label>
+        <label for="fPelicula"><i class="ti ti-movie"></i> <span id="labelPelicula">Título de la película</span></label>
+        <div class="campo-con-boton">
+          <input type="text" id="fPelicula" required>
+          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar título"><i class="ti ti-clipboard"></i></button>
+        </div>
+      </div>
+      <div class="campo">
+        <input type="hidden" id="fPoster">
+        <button type="button" class="btn-secundario" id="btnEliminarPoster"><i class="ti ti-trash"></i> Eliminar poster</button>
+      </div>
+      <div class="campo">
+        <label for="fDato"><i class="ti ti-info-circle"></i> Información adicional</label>
+        <input type="text" id="fDato">
+      </div>
+      <div class="campo">
+        <label for="fVisto"><i class="ti ti-eye"></i> Visto</label>
         <select id="fVisto">
           <option>Visto</option>
           <option>Falta ver</option>
@@ -571,11 +579,11 @@
         </select>
       </div>
       <div class="campo">
-        <label for="fNota">Nota</label>
-        <input type="text" id="fNota">
+        <label for="fNota"><i class="ti ti-star"></i> Calificación</label>
+        <input type="number" id="fNota" min="0" max="5" step="0.2">
       </div>
       <div class="modal-acciones">
-        <button type="button" class="btn-secundario" id="btnCancelar">Cancelar</button>
+        <button type="button" class="btn-secundario btn-volver" id="btnCancelar"><i class="ti ti-arrow-left"></i> Volver</button>
         <button type="submit" class="btn-primario" id="btnGuardar"><i class="ti ti-device-floppy"></i> Guardar</button>
       </div>
     </form>
@@ -595,7 +603,7 @@
     <div class="detalle-fila"><span class="etiqueta">Dato</span><span class="valor" id="dDato"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Nota</span><span class="valor" id="dNota"></span></div>
     <div class="modal-acciones">
-      <button type="button" class="btn-secundario" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
+      <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
       <button type="button" class="btn-primario" id="btnEditarDesdeDetalle"><i class="ti ti-pencil"></i> Editar</button>
     </div>
   </div>
@@ -620,7 +628,7 @@
     <h2>Elige un póster</h2>
     <div id="posterGrid" class="grid-poster"></div>
     <div class="modal-acciones">
-      <button type="button" class="btn-secundario" id="btnCerrarPoster">Cancelar</button>
+      <button type="button" class="btn-secundario btn-volver" id="btnCerrarPoster"><i class="ti ti-arrow-left"></i> Volver</button>
     </div>
   </div>
 </div>
@@ -715,7 +723,7 @@
 
   async function cargarCarrusel() {
     try {
-      const data = await api('?perPage=10&filter=(visto="Visto")&sort=-updated');
+      const data = await api('?perPage=10&filter=' + encodeURIComponent('(visto="Visto" || visto="Ver otra vez")') + '&sort=-updated');
       $carrusel.innerHTML = '';
       if (!data.items || !data.items.length) {
         $carruselWrap.style.display = 'none';
@@ -745,12 +753,13 @@
     if (window.innerWidth > 640) return;
     carruselTimer = setInterval(() => {
       const maxScroll = $carrusel.scrollWidth - $carrusel.clientWidth;
-      if ($carrusel.scrollLeft >= maxScroll) {
+      const proximo = $carrusel.scrollLeft + $carrusel.clientWidth;
+      if (proximo >= maxScroll) {
         $carrusel.scrollTo({ left: 0, behavior: 'smooth' });
       } else {
         $carrusel.scrollBy({ left: $carrusel.clientWidth, behavior: 'smooth' });
       }
-    }, 3500);
+    }, 6000);
   }
   window.addEventListener('resize', () => {
     clearInterval(carruselTimer);
@@ -944,14 +953,21 @@
     cerrarOverlay($overlayAleatorio);
   }
 
+  function actualizarLabelPelicula() {
+    const tipo = $formulario.fClase.value === 'serie' ? 'serie' : 'película';
+    document.getElementById('labelPelicula').textContent = 'Título de la ' + tipo;
+  }
+
   function abrirCrear() {
     modo = 'crear';
     idEditando = null;
     $formulario.reset();
+    $formulario.fPoster.value = '';
     $formulario.fClase.value = 'película';
     $formulario.fVisto.value = 'Falta ver';
+    document.getElementById('btnEliminarPoster').style.display = 'none';
+    actualizarLabelPelicula();
     $modalTitulo.textContent = 'Agregar película';
-    document.getElementById('campoId').style.display = 'none';
     abrirModal();
     $formulario.fPelicula.focus();
   }
@@ -960,21 +976,23 @@
     modo = 'editar';
     idEditando = p.id;
     $formulario.fId.value = p.id;
-    document.getElementById('campoId').style.display = '';
     $formulario.fPelicula.value = p.pelicula;
     $formulario.fPoster.value = p.poster || '';
     $formulario.fClase.value = (p.clase || 'película').toLowerCase() === 'serie' ? 'serie' : 'película';
     $formulario.fVisto.value = p.visto;
     $formulario.fDato.value = p.dato || '';
     $formulario.fNota.value = p.nota || '';
+    document.getElementById('btnEliminarPoster').style.display = '';
+    actualizarLabelPelicula();
     $modalTitulo.textContent = 'Editar película';
     abrirModal();
     $formulario.fPelicula.focus();
   }
 
-  async function buscarPosterTMDb(titulo) {
+  async function buscarPosterTMDb(titulo, esSerie = false) {
     if (!TMDB_TOKEN) throw new Error('Token TMDB no configurado');
-    const url = 'https://api.themoviedb.org/3/search/movie?query=' +
+    const endpoint = esSerie ? 'search/tv' : 'search/movie';
+    const url = 'https://api.themoviedb.org/3/' + endpoint + '?query=' +
       encodeURIComponent(titulo) +
       '&include_adult=false&language=es&page=1';
     const res = await fetch(url, {
@@ -991,7 +1009,8 @@
   async function buscarPortadaDesdeDetalle() {
     if (!detalleActual) return;
     try {
-      const data = await buscarPosterTMDb(detalleActual.pelicula);
+      const esSerie = (detalleActual.clase || '').toLowerCase() === 'serie';
+      const data = await buscarPosterTMDb(detalleActual.pelicula, esSerie);
       if (!data) return;
       if (data.total_results === 1 && data.results && data.results.length === 1) {
         const poster = data.results[0].poster_path;
@@ -1061,10 +1080,33 @@
       let registro;
       if (modo === 'crear') {
         registro = await api('', { method: 'POST', body: JSON.stringify(body) });
+        mostrarToast('Guardado correctamente');
+        // Auto-buscar portada solo al crear
+        if (TMDB_TOKEN) {
+          try {
+            const esSerie = body.clase === 'serie';
+            const data = await buscarPosterTMDb(body.pelicula, esSerie);
+            if (data && data.results && data.results.length === 1) {
+              const poster = data.results[0].poster_path;
+              if (poster) {
+                await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
+                registro.poster = poster;
+                mostrarToast('Portada asignada');
+              }
+            } else if (data && data.results && data.results.length > 1) {
+              cerrarModal();
+              abrirSelectorPoster(data.results, registro);
+              await cargar();
+              return;
+            }
+          } catch (_) {
+            // Si TMDB falla, continúa sin asignar portada
+          }
+        }
       } else {
         registro = await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
+        mostrarToast('Guardado correctamente');
       }
-      mostrarToast('Guardado correctamente');
       await cargar();
       cerrarModal();
       setTimeout(() => {
@@ -1189,6 +1231,11 @@
     }, 250);
   };
   document.getElementById('btnCancelar').onclick = cerrarModal;
+  document.getElementById('btnEliminarPoster').onclick = () => {
+    $formulario.fPoster.value = '';
+    mostrarToast('Poster eliminado');
+  };
+  $formulario.fClase.addEventListener('change', actualizarLabelPelicula);
   $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
   $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
   document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
