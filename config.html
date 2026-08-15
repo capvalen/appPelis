@@ -178,6 +178,16 @@
     color: #fff;
   }
   .opcion-vista i { font-size: 1.1rem; }
+  footer.credito {
+    max-width: 640px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    text-align: center;
+    font-size: .85rem;
+    color: var(--texto-suave);
+  }
+  footer.credito a { color: var(--morado); text-decoration: none; }
+  footer.credito a:hover { text-decoration: underline; }
 </style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
@@ -224,6 +234,13 @@
   </div>
 </div>
 
+<footer class="credito">
+  <div>Aplicativo creado por Carlos Pariona V.</div>
+  <div>Página web <a href="https://infocatsoluciones.com" target="_blank" rel="noopener noreferrer">https://infocatsoluciones.com</a></div>
+  <div>Correo de contacto <a href="mailto:servidor@infocatsoluciones.com">servidor@infocatsoluciones.com</a></div>
+  <div>Versión: 1.04d</div>
+</footer>
+
 <script>
   const $switch = document.getElementById('modoOscuro');
   const $estado = document.getElementById('estado');
@@ -235,7 +252,7 @@
     $estado.textContent = oscuro ? 'Activado' : 'Desactivado';
   }
 
-  $switch.checked = localStorage.getItem('modoOscuro') === 'true';
+  $switch.checked = localStorage.getItem('modoOscuro') !== 'false';
   $switch.addEventListener('change', aplicar);
   aplicar();
 
