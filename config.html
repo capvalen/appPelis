@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración - Peliteca</title>
+  <link rel="icon" type="image/png" href="/assets/martian.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="manifest" href="/manifest.json">
+<style>
+  :root {
+    --morado: #965bef;
+    --morado-oscuro: #7a3fd0;
+    --morado-suave: #ae7bf2;
+    --morado-claro: #e9dcfb;
+    --morado-claro-hover: #dcc9f9;
+    --morado-mas-claro: #f4eefd;
+    --texto: #1f2937;
+    --texto-suave: #6b7280;
+    --borde: #e5e7eb;
+    --rojo: #dc2626;
+    --fondo: #ffffff;
+    --superficie: #ffffff;
+    --superficie-suave: #f3f4f6;
+    --superficie-2: #f9fafb;
+  }
+  html.tema-oscuro {
+    --fondo: #12151d;
+    --superficie: #1a1e2a;
+    --superficie-suave: #262b3b;
+    --superficie-2: #20242f;
+    --texto: #e5e7eb;
+    --texto-suave: #9ca3af;
+    --borde: #2c3244;
+    --morado: #a78bfa;
+    --morado-oscuro: #c4b5fd;
+    --morado-suave: #7c5cd6;
+    --morado-claro: #3b3561;
+    --morado-claro-hover: #473f6e;
+    --morado-mas-claro: #2c2846;
+    --rojo: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    min-height: 100vh;
+    transition: background .25s ease, color .25s ease;
+  }
+  header {
+    position: relative;
+    background: var(--superficie);
+    color: var(--morado);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(150, 91, 239, .18);
+  }
+  header h1 {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--morado);
+    text-align: center;
+    white-space: nowrap;
+  }
+  header .logo { height: 40px; width: auto; border-radius: 8px; }
+  html.tema-oscuro header {
+    background: #06041f;
+    box-shadow: none;
+  }
+  .btn-volver {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: #6152ff;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: .95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+  }
+  .btn-volver:hover { background: var(--superficie-2); }
+  .contenedor {
+    max-width: 640px;
+    margin: 32px auto 48px;
+    padding: 0 24px;
+  }
+  .tarjeta {
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    padding: 20px;
+    background: var(--superficie);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .tarjeta .info { flex: 1; }
+  .tarjeta .titulo {
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tarjeta .titulo i { color: var(--morado); }
+  .tarjeta .descripcion { color: var(--texto-suave); font-size: .88rem; margin-top: 4px; }
+  /* switch */
+  .switch {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px;
+    height: 28px;
+  }
+  .switch input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .switch .pista {
+    position: absolute;
+    inset: 0;
+    background: var(--borde);
+    border-radius: 999px;
+    transition: background .2s;
+    pointer-events: none;
+  }
+  .switch input:checked + .pista { background: var(--morado); }
+  .switch .perilla {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+    transition: transform .2s;
+    pointer-events: none;
+  }
+  .switch input:checked ~ .perilla { transform: translateX(24px); }
+  .estado { font-size: .8rem; color: var(--texto-suave); }
+  /* opciones de vista */
+  .opciones { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+  .opcion-vista {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto-suave);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .opcion-vista:hover { border-color: var(--morado); color: var(--morado); }
+  .opcion-vista.activo {
+    background: var(--morado);
+    border-color: var(--morado);
+    color: #fff;
+  }
+  .opcion-vista i { font-size: 1.1rem; }
+</style>
+<script>
+  // Aplicar el tema antes del primer render para evitar parpadeo
+  (function () {
+    var oscuro = localStorage.getItem('modoOscuro') === 'true';
+    if (oscuro) document.documentElement.classList.add('tema-oscuro');
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <img class="logo" src="/assets/martian.png" alt="Peliteca">
+    <h1>Configuración</h1>
+  </div>
+  <a class="btn-volver" href="/"><i class="ti ti-arrow-left"></i> Volver</a>
+</header>
+
+<div class="contenedor">
+  <div class="tarjeta">
+    <div class="info">
+      <div class="titulo"><i class="ti ti-moon-stars"></i> Modo oscuro</div>
+      <div class="descripcion">Cambia la apariencia de la aplicación entre tema claro y oscuro.</div>
+      <div class="estado" id="estado"></div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="modoOscuro">
+      <span class="pista"></span>
+      <span class="perilla"></span>
+    </label>
+  </div>
+
+  <div class="tarjeta">
+    <div class="info">
+      <div class="titulo"><i class="ti ti-layout-grid"></i> Modo de vista</div>
+      <div class="descripcion">Elige cómo se muestran las películas en la lista.</div>
+      <div class="estado" id="estadoVista"></div>
+    </div>
+    <div class="opciones">
+      <button type="button" class="opcion-vista" id="vistaTitulos"><i class="ti ti-align-left"></i> Solo títulos</button>
+      <button type="button" class="opcion-vista" id="vistaPortada"><i class="ti ti-photo"></i> Modo portada</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const $switch = document.getElementById('modoOscuro');
+  const $estado = document.getElementById('estado');
+
+  function aplicar() {
+    const oscuro = $switch.checked;
+    document.documentElement.classList.toggle('tema-oscuro', oscuro);
+    localStorage.setItem('modoOscuro', oscuro ? 'true' : 'false');
+    $estado.textContent = oscuro ? 'Activado' : 'Desactivado';
+  }
+
+  $switch.checked = localStorage.getItem('modoOscuro') === 'true';
+  $switch.addEventListener('change', aplicar);
+  aplicar();
+
+  // modo de vista
+  const $estadoVista = document.getElementById('estadoVista');
+  const $vistaTitulos = document.getElementById('vistaTitulos');
+  const $vistaPortada = document.getElementById('vistaPortada');
+
+  function aplicarVista() {
+    const vista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
+    $vistaTitulos.classList.toggle('activo', vista === 'titulos');
+    $vistaPortada.classList.toggle('activo', vista === 'portada');
+    $estadoVista.textContent = vista === 'portada' ? 'Modo portada' : 'Solo títulos';
+  }
+
+  $vistaTitulos.onclick = () => { localStorage.setItem('modoVista', 'titulos'); aplicarVista(); };
+  $vistaPortada.onclick = () => { localStorage.setItem('modoVista', 'portada'); aplicarVista(); };
+  aplicarVista();
+</script>
+
+</body>
+</html>

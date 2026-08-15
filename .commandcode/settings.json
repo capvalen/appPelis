@@ -8,7 +8,14 @@
       "Shell(npm:*)",
       "Shell(cd /home/karl/Proyectos/appPelis && ls -la node_modules 2>&1; npm ls 2>&1 | head -10; npm config ls 2>&1 | head -20)",
       "Shell(cd /home/karl/Proyectos/appPelis && cat .npmrc 2>/dev/null; npm config get omit 2>&1; npm config get ignore-scripts 2>&1; npm config get production 2>&1; ls -la ~/.npmrc 2>/dev/null)",
-      "Shell(npx vite build 2 >& 1)"
+      "Shell(npx vite build 2 >& 1)",
+      "Shell(npx --yes serve dist -l 4173)",
+      "Shell(curl -s -o /dev/null -w %{http_code} %{url_effective}\\n http://localhost:4173/config.html)",
+      "Shell(curl -s -o /dev/null -w %{http_code} %{url_effective}\\n http://localhost:4173/)",
+      "Shell(curl -s -L -o /dev/null -w %{http_code} %{url_effective}\\n http://localhost:4173/config.html)",
+      "Shell(curl -s http://localhost:4173/config.html)",
+      "Shell(curl -s http://localhost:4173/)",
+      "Shell(curl -s http://localhost:4173/assets/main-xr9sAVPy.js)"
     ],
     "deny": [],
     "defaultMode": "default"
