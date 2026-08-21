@@ -3,11 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Videoteca - Infocat</title>
+  <title>Juegos - Infocat</title>
   <link rel="icon" type="image/png" href="/assets/martian.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 	<link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/style.css">
+<style>
+  /* buscador de juegos (SteamGridDB) */
+  .buscar-juego-resultados {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 4px;
+  }
+  .buscar-juego-resultados button {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    background: var(--superficie-suave);
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    font-weight: 500;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .buscar-juego-resultados button:hover {
+    background: var(--morado-claro);
+    border-color: var(--morado);
+    color: var(--morado-oscuro);
+  }
+</style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
   (function () {
@@ -21,14 +47,14 @@
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
     <img class="logo" src="/assets/martian.png" alt="Videoteca">
-    <h1>Videoteca ~ Infocat</h1>
+    <h1>Juegos ~ Infocat</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
     <div class="menu-wrap">
       <button type="button" class="btn-menu" id="btnMenu" title="Menú"><i class="ti ti-menu-2"></i></button>
       <nav class="menu-panel" id="menuPanel">
-        <a href="/index.html" class="activo"><i class="ti ti-device-tv"></i> Películas / Series</a>
-        <a href="/juegos.html"><i class="ti ti-gamepad"></i> Juegos</a>
+        <a href="/index.html"><i class="ti ti-device-tv"></i> Películas / Series</a>
+        <a href="/juegos.html" class="activo"><i class="ti ti-gamepad"></i> Juegos</a>
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
@@ -37,7 +63,7 @@
 </header>
 
 <div class="carrusel-wrap" id="carruselWrap">
-  <div class="carrusel-titulo"><i class="ti ti-swipe"></i> Visto últimamente</div>
+  <div class="carrusel-titulo"><i class="ti ti-swipe"></i> Jugado últimamente</div>
   <button class="carrusel-btn prev" id="carruselPrev" title="Anterior"><i class="ti ti-chevron-left"></i></button>
   <div class="carrusel" id="carrusel"></div>
   <button class="carrusel-btn next" id="carruselNext" title="Siguiente"><i class="ti ti-chevron-right"></i></button>
@@ -45,7 +71,7 @@
 
 <div class="toolbar">
   <div class="buscar-wrap">
-    <input type="text" id="buscar" placeholder="Buscar por película o dato...">
+    <input type="text" id="buscar" placeholder="Buscar por juego o información...">
     <button class="btn-limpiar" id="btnLimpiar" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
   </div>
   <button class="btn-primario" id="btnAgregar"><i class="ti ti-plus"></i> Agregar</button>
@@ -56,21 +82,14 @@
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="modalTitulo">Agregar película</h2>
+    <h2 id="modalTitulo">Agregar juego</h2>
     <form id="formulario">
       <input type="hidden" id="fId">
       <div class="campo">
-        <label for="fClase"><i class="ti ti-category"></i> Clase</label>
-        <select id="fClase">
-          <option value="película">Película</option>
-          <option value="serie">Serie</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="fPelicula"><i class="ti ti-movie"></i> <span id="labelPelicula">Título de la película</span></label>
+        <label for="fPelicula"><i class="ti ti-gamepad"></i> <span id="labelPelicula">Nombre del juego</span></label>
         <div class="campo-con-boton">
           <input type="text" id="fPelicula" required>
-          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar título"><i class="ti ti-clipboard"></i></button>
+          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar nombre"><i class="ti ti-clipboard"></i></button>
         </div>
       </div>
       <div class="campo">
@@ -82,13 +101,15 @@
         <input type="text" id="fDato">
       </div>
       <div class="campo">
-        <label for="fVisto"><i class="ti ti-eye"></i> Visto</label>
+        <label for="fUbicacion"><i class="ti ti-map-pin"></i> Ubicación</label>
+        <input type="text" id="fUbicacion" placeholder="¿Dónde está guardado?">
+      </div>
+      <div class="campo">
+        <label for="fVisto"><i class="ti ti-eye"></i> Estado</label>
         <select id="fVisto">
-          <option>Visto</option>
-          <option>Falta ver</option>
-          <option>Ver otra vez</option>
-          <option>Urgente</option>
-          <option>Viendo</option>
+          <option>Pendiente</option>
+          <option>Jugado</option>
+          <option>Volver a jugar</option>
         </select>
       </div>
       <div class="campo">
@@ -126,6 +147,7 @@
     </div>
     <div class="sub" id="dVisto"></div>
     <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
+    <div class="detalle-fila"><span class="etiqueta">Ubicación</span><span class="valor" id="dUbicacion"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
     <div class="modal-acciones">
@@ -137,7 +159,7 @@
 
 <div class="overlay" id="overlayAleatorio">
   <div class="modal modal-aleatorio">
-    <h2><i class="ti ti-dice-5"></i> Película aleatoria</h2>
+    <h2><i class="ti ti-dice-5"></i> Juego aleatorio</h2>
     <div class="alea-busqueda" id="aleaBusqueda">
       <img id="aleaDado" src="/assets/dice_1.png" alt="Dado">
       <span><i class="ti ti-player-track-next"></i> Buscando...</span>
@@ -151,7 +173,7 @@
 
 <div class="overlay" id="overlayPoster">
   <div class="modal modal-poster">
-    <h2>Elige un póster</h2>
+    <h2>Elige una portada</h2>
     <div id="posterGrid" class="grid-poster"></div>
     <div class="modal-acciones">
       <button type="button" class="btn-secundario btn-volver" id="btnCerrarPoster"><i class="ti ti-arrow-left"></i> Volver</button>
@@ -159,15 +181,29 @@
   </div>
 </div>
 
+<div class="overlay" id="overlayBuscarJuego">
+  <div class="modal">
+    <h2><i class="ti ti-search"></i> Buscar juego</h2>
+    <div class="campo">
+      <label for="buscarJuegoInput"><i class="ti ti-gamepad"></i> Nombre del juego</label>
+      <input type="text" id="buscarJuegoInput" placeholder="Escribe para buscar...">
+    </div>
+    <div class="modal-acciones" style="margin-top:0; margin-bottom:14px;">
+      <button type="button" class="btn-secundario btn-volver" id="btnCerrarBuscarJuego"><i class="ti ti-arrow-left"></i> Volver</button>
+      <button type="button" class="btn-primario" id="btnBuscarJuego"><i class="ti ti-search"></i> Buscar</button>
+    </div>
+    <div class="buscar-juego-resultados" id="buscarJuegoResultados"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
-<button id="btnAleatorio" title="Película aleatoria"><i class="ti ti-dice-5"></i></button>
+<button id="btnAleatorio" title="Juego aleatorio"><i class="ti ti-dice-5"></i></button>
 <button id="btnSubir" title="Ir al inicio"><i class="ti ti-chevron-up"></i></button>
 
 <script type="module">
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
-
-  const TMDB_TOKEN = import.meta.env.VITE_API_TMDB || '';
+  const STEAM_PROXY = 'https://steam-db.infocatsoluciones.deno.net/api';
 
   const $lista = document.getElementById('lista');
   const $buscar = document.getElementById('buscar');
@@ -184,6 +220,7 @@
   const $btnCopiar = document.getElementById('btnCopiar');
   const $dVisto = document.getElementById('dVisto');
   const $dDato = document.getElementById('dDato');
+  const $dUbicacion = document.getElementById('dUbicacion');
   const $dNota = document.getElementById('dNota');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
@@ -193,17 +230,20 @@
   const $aleaDado = document.getElementById('aleaDado');
   const $overlayPoster = document.getElementById('overlayPoster');
   const $posterGrid = document.getElementById('posterGrid');
+  const $overlayBuscarJuego = document.getElementById('overlayBuscarJuego');
+  const $buscarJuegoInput = document.getElementById('buscarJuegoInput');
+  const $buscarJuegoResultados = document.getElementById('buscarJuegoResultados');
   const $carrusel = document.getElementById('carrusel');
   const $carruselWrap = document.getElementById('carruselWrap');
 
   let peliculas = [];
   let filtro = '';
   let filtroVisto = '';
-  let filtroClase = '';
   let modo = 'crear';
   let idEditando = null;
   let detalleActual = null;
   let posterRegistro = null;
+  let juegoSteamId = null; // id de SteamGridDB del juego en creación
   let aleaActual = null;
   let aleaIntervalo = null;
   let aleaCara = 1;
@@ -243,7 +283,7 @@
     let page = 1;
     let items = [];
     while (true) {
-      const data = await api('?page=' + page + '&perPage=500&sort=-created&filter=' + encodeURIComponent('(clase != "juego" && clase != "libro")'));
+      const data = await api('?page=' + page + '&perPage=500&sort=-created&filter=' + encodeURIComponent('clase = "juego"'));
       items = items.concat(data.items);
       if (page >= data.totalPages) break;
       page++;
@@ -255,7 +295,7 @@
 
   async function cargarCarrusel() {
     try {
-      const data = await api('?perPage=10&filter=' + encodeURIComponent('(visto="Visto" || visto="Ver otra vez") && (clase != "juego" && clase != "libro")') + '&sort=-updated');
+      const data = await api('?perPage=10&filter=' + encodeURIComponent('(visto="Jugado") && clase = "juego"') + '&sort=-updated');
       $carrusel.innerHTML = '';
       if (!data.items || !data.items.length) {
         $carruselWrap.style.display = 'none';
@@ -266,7 +306,7 @@
         const div = document.createElement('div');
         div.className = 'carrusel-item';
         const img = document.createElement('img');
-        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/movies.webp';
+        img.src = p.poster ? p.poster : '/assets/movies.webp';
         img.alt = p.pelicula;
         img.loading = 'lazy';
         div.appendChild(img);
@@ -319,19 +359,21 @@
   });
 
   function badge(visto) {
-    const cls = visto === 'Visto' ? 'Visto'
-      : visto === 'Falta ver' ? 'Falta'
-      : visto === 'Ver otra vez' ? 'Ver'
-      : visto === 'Viendo' ? 'Viendo'
-      : 'Urgente';
-    return '<span class="badge ' + cls + '">' + visto + '</span>';
+    const cls = visto === 'Jugado' ? 'Jugado'
+      : visto === 'Volver a jugar' ? 'Volver'
+      : 'Pendiente';
+    return '<span class="badge ' + cls + '">' + (visto || 'Pendiente') + '</span>';
   }
 
   function badgeClase(clase) {
-    const esSerie = (clase || '').toLowerCase() === 'serie';
-    const icono = esSerie ? 'ti ti-armchair' : 'ti ti-device-tv';
-    const texto = esSerie ? 'Serie' : 'Película';
-    return '<span class="badge clase"><i class="' + icono + '"></i> ' + texto + '</span>';
+    const c = (clase || '').toLowerCase();
+    if (c === 'juego') {
+      return '<span class="badge clase"><i class="ti ti-gamepad"></i> Juego</span>';
+    }
+    if (c === 'serie') {
+      return '<span class="badge clase"><i class="ti ti-armchair"></i> Serie</span>';
+    }
+    return '<span class="badge clase"><i class="ti ti-device-tv"></i> Película</span>';
   }
 
   function tituloConAnio(p) {
@@ -344,8 +386,8 @@
       const div = document.createElement('div');
       div.className = 'tarjeta portada';
       const imgSrc = p.poster
-        ? 'https://image.tmdb.org/t/p/w500/' + p.poster
-        : '/assets/want.jpg';
+        ? p.poster
+        : '/assets/playing.jpg';
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
         '<div class="info">' +
@@ -387,18 +429,10 @@
     const q = normalizar(filtro);
     const visibles = peliculas.filter(p => {
       if (filtroVisto && p.visto !== filtroVisto) return false;
-      if (filtroClase && (p.clase || 'película') !== filtroClase) return false;
       if (!q) return true;
       return normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q);
     });
-    let texto;
-    if (filtroClase === 'película') {
-      texto = visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
-    } else if (filtroClase === 'serie') {
-      texto = visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
-    } else {
-      texto = visibles.length + ' películas y series';
-    }
+    const texto = visibles.length + ' juego' + (visibles.length === 1 ? '' : 's');
     $contador.textContent = texto;
     $lista.classList.toggle('modo-portada', modoVista === 'portada');
     $lista.innerHTML = '';
@@ -458,6 +492,7 @@
     $dPelicula.textContent = tituloConAnio(p);
     $dVisto.innerHTML = badge(p.visto) + badgeClase(p.clase);
     $dDato.textContent = p.dato ? p.dato : '—';
+    $dUbicacion.textContent = p.ubicacion ? p.ubicacion : '—';
     $dNota.innerHTML = p.nota
       ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
       : '—';
@@ -476,13 +511,13 @@
       btn.className = 'btn-buscar-portada';
       btn.id = 'btnBuscarPortada';
       btn.innerHTML = '<i class="ti ti-photo-search"></i> Buscar portada';
-      btn.onclick = buscarPortadaDesdeDetalle;
+      btn.onclick = abrirBuscarJuego;
       $dPoster.appendChild(btn);
       return;
     }
     $dPoster.className = 'tiene-poster';
     const img = document.createElement('img');
-    img.src = 'https://image.tmdb.org/t/p/w500/' + poster;
+    img.src = poster;
     img.alt = 'Póster';
     img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.className = ''; };
     $dPoster.appendChild(img);
@@ -491,7 +526,7 @@
   function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
 
   function abrirAleatorio() {
-    const candidatas = peliculas.filter(p => p.visto === 'Falta ver' || p.visto === 'Ver otra vez' || p.visto === 'Urgente' || p.visto === 'Viendo');
+    const candidatas = peliculas.filter(p => p.visto === 'Pendiente' || p.visto === 'Volver a jugar');
     aleaActual = null;
     $btnAleaDetalle.style.display = 'none';
     $aleaResultado.classList.remove('visible');
@@ -544,24 +579,17 @@
     cerrarOverlay($overlayAleatorio);
   }
 
-  function actualizarLabelPelicula() {
-    const tipo = $formulario.fClase.value === 'serie' ? 'serie' : 'película';
-    document.getElementById('labelPelicula').textContent = 'Título de la ' + tipo;
-  }
-
   function abrirCrear() {
     modo = 'crear';
     idEditando = null;
+    juegoSteamId = null;
     $formulario.reset();
     $formulario.fPoster.value = '';
-    $formulario.fClase.value = 'película';
-    $formulario.fVisto.value = 'Falta ver';
+    $formulario.fVisto.value = 'Pendiente';
     $formulario.fRecomendable.checked = false;
     document.getElementById('btnEliminarPoster').style.display = 'none';
-    actualizarLabelPelicula();
-    $modalTitulo.textContent = 'Agregar película';
-    abrirModal();
-    $formulario.fPelicula.focus();
+    $modalTitulo.textContent = 'Agregar juego';
+    abrirBuscarJuego();
   }
 
   function abrirEditar(p) {
@@ -570,92 +598,112 @@
     $formulario.fId.value = p.id;
     $formulario.fPelicula.value = p.pelicula;
     $formulario.fPoster.value = p.poster || '';
-    $formulario.fClase.value = (p.clase || 'película').toLowerCase() === 'serie' ? 'serie' : 'película';
     $formulario.fVisto.value = p.visto;
     $formulario.fDato.value = p.dato || '';
+    $formulario.fUbicacion.value = p.ubicacion || '';
     $formulario.fNota.value = p.nota || '';
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
     document.getElementById('btnEliminarPoster').style.display = '';
-    actualizarLabelPelicula();
-    $modalTitulo.textContent = 'Editar película';
+    $modalTitulo.textContent = 'Editar juego';
     abrirModal();
     $formulario.fPelicula.focus();
   }
 
-  async function buscarPosterTMDb(titulo, esSerie = false) {
-    if (!TMDB_TOKEN) throw new Error('Token TMDB no configurado');
-    const endpoint = esSerie ? 'search/tv' : 'search/movie';
-    const url = 'https://api.themoviedb.org/3/' + endpoint + '?query=' +
-      encodeURIComponent(titulo) +
-      '&include_adult=false&language=es&page=1';
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: 'Bearer ' + TMDB_TOKEN
-      }
-    });
-    if (!res.ok) throw new Error('Error TMDB ' + res.status);
+  async function buscarJuegoSteam(query) {
+    const url = STEAM_PROXY + '/buscar/' + encodeURIComponent(query);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Error buscando juego: ' + res.status);
     return res.json();
   }
 
-  async function buscarPortadaDesdeDetalle() {
-    if (!detalleActual) return;
+  async function buscarPortadasSteam(id) {
+    const url = STEAM_PROXY + '/portadas/' + encodeURIComponent(id);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Error buscando portadas: ' + res.status);
+    return res.json();
+  }
+
+  function abrirBuscarJuego() {
+    juegoSteamId = null;
+    $buscarJuegoInput.value = '';
+    $buscarJuegoResultados.innerHTML = '';
+    abrirOverlay($overlayBuscarJuego);
+    $buscarJuegoInput.focus();
+  }
+
+  function cerrarBuscarJuego() { cerrarOverlay($overlayBuscarJuego); }
+
+  async function ejecutarBuscarJuego() {
+    const q = $buscarJuegoInput.value.trim();
+    if (!q) return;
+    $buscarJuegoResultados.innerHTML = '<div class="cargando">Buscando...</div>';
     try {
-      const esSerie = (detalleActual.clase || '').toLowerCase() === 'serie';
-      const data = await buscarPosterTMDb(detalleActual.pelicula, esSerie);
-      if (!data) return;
-      if (data.total_results === 1 && data.results && data.results.length === 1) {
-        const poster = data.results[0].poster_path;
-        if (poster) {
-          await api('/' + detalleActual.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
-          detalleActual.poster = poster;
-          mostrarToast('Portada actualizada');
-          await cargar();
-          cerrarOverlay($overlayDetalle);
-          setTimeout(() => abrirDetalle(detalleActual), 250);
-        }
-      } else if (data.results && data.results.length > 1) {
-        abrirSelectorPoster(data.results, detalleActual);
+      const data = await buscarJuegoSteam(q);
+      const items = (data && data.data) || [];
+      $buscarJuegoResultados.innerHTML = '';
+      if (!items.length) {
+        $buscarJuegoResultados.innerHTML = '<div class="sin-poster">Sin resultados para "' + q + '"</div>';
+        return;
+      }
+      // Si hay exactamente 1 resultado, tomarlo directo y abrir el selector de portadas
+      if (items.length === 1) {
+        const g = items[0];
+        juegoSteamId = g.id;
+        $formulario.fPelicula.value = g.name;
+        cerrarBuscarJuego();
+        abrirSelectorPortada(g.id, g.name);
+        return;
+      }
+      for (const g of items) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = g.name;
+        btn.onclick = () => {
+          juegoSteamId = g.id;
+          $formulario.fPelicula.value = g.name;
+          cerrarBuscarJuego();
+          abrirSelectorPortada(g.id, g.name);
+        };
+        $buscarJuegoResultados.appendChild(btn);
       }
     } catch (err) {
-      mostrarToast('Error: ' + err.message);
+      $buscarJuegoResultados.innerHTML = '<div class="sin-poster">Error: ' + err.message + '</div>';
     }
   }
 
-  function abrirSelectorPoster(results, registro) {
-    posterRegistro = registro;
-    $posterGrid.innerHTML = '';
-    const primeros = results.slice(0, 6);
-    const conPoster = primeros.filter(r => r.poster_path);
-    if (!conPoster.length) {
-      const v = document.createElement('div');
-      v.className = 'sin-poster';
-      v.textContent = 'Sin pósters disponibles';
-      $posterGrid.appendChild(v);
-    } else {
-      for (const r of conPoster) {
+  async function abrirSelectorPortada(steamId, nombre) {
+    $posterGrid.innerHTML = '<div class="cargando">Buscando portadas...</div>';
+    try {
+      const data = await buscarPortadasSteam(steamId);
+      const grids = (data && data.data) || [];
+      $posterGrid.innerHTML = '';
+      if (!grids.length) {
+        const v = document.createElement('div');
+        v.className = 'sin-poster';
+        v.textContent = 'Sin portadas disponibles';
+        $posterGrid.appendChild(v);
+        return;
+      }
+      for (const g of grids) {
+        const urlPortada = g.thumb || g.url;
         const img = document.createElement('img');
-        img.src = 'https://image.tmdb.org/t/p/w500/' + r.poster_path;
-        img.alt = r.title || 'Póster';
+        img.src = urlPortada;
+        img.alt = nombre || 'Portada';
         img.loading = 'lazy';
-        img.onclick = async () => {
-          try {
-            await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster: r.poster_path }) });
-            registro.poster = r.poster_path;
-            mostrarToast('Póster guardado');
-            cerrarOverlay($overlayPoster);
-            await cargar();
-            setTimeout(() => abrirDetalle(registro), 250);
-          } catch (err) {
-            mostrarToast('Error guardando póster: ' + err.message);
-          }
+        img.onclick = () => {
+          $formulario.fPoster.value = urlPortada;
+          cerrarOverlay($overlayPoster);
+          mostrarToast('Portada seleccionada');
+          abrirModal();
+          $formulario.fPelicula.focus();
         };
         $posterGrid.appendChild(img);
       }
+      abrirOverlay($overlayPoster);
+    } catch (err) {
+      $posterGrid.innerHTML = '<div class="sin-poster">Error: ' + err.message + '</div>';
     }
-    abrirOverlay($overlayPoster);
   }
 
   function cerrarSelectorPoster() { cerrarOverlay($overlayPoster); }
@@ -665,9 +713,10 @@
     const body = {
       pelicula: $formulario.fPelicula.value.trim(),
       poster: $formulario.fPoster.value.trim(),
-      clase: $formulario.fClase.value,
+      clase: 'juego',
       visto: $formulario.fVisto.value,
       dato: $formulario.fDato.value.trim(),
+      ubicacion: $formulario.fUbicacion.value.trim(),
       nota: $formulario.fNota.value.trim(),
       anio: $formulario.fAnio.value.trim(),
       recomendable: $formulario.fRecomendable.checked
@@ -677,28 +726,6 @@
       if (modo === 'crear') {
         registro = await api('', { method: 'POST', body: JSON.stringify(body) });
         mostrarToast('Guardado correctamente');
-        // Auto-buscar portada solo al crear
-        if (TMDB_TOKEN) {
-          try {
-            const esSerie = body.clase === 'serie';
-            const data = await buscarPosterTMDb(body.pelicula, esSerie);
-            if (data && data.results && data.results.length === 1) {
-              const poster = data.results[0].poster_path;
-              if (poster) {
-                await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
-                registro.poster = poster;
-                mostrarToast('Portada asignada');
-              }
-            } else if (data && data.results && data.results.length > 1) {
-              cerrarModal();
-              abrirSelectorPoster(data.results, registro);
-              await cargar();
-              return;
-            }
-          } catch (_) {
-            // Si TMDB falla, continúa sin asignar portada
-          }
-        }
       } else {
         registro = await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
         mostrarToast('Guardado correctamente');
@@ -724,11 +751,7 @@
     }
   }
 
-  const ESTADOS = ['Visto', 'Falta ver', 'Ver otra vez', 'Urgente', 'Viendo'];
-  const CLASES = [
-    { valor: 'película', etiqueta: 'Película', icono: 'ti ti-device-tv' },
-    { valor: 'serie', etiqueta: 'Serie', icono: 'ti ti-armchair' }
-  ];
+  const ESTADOS = ['Pendiente', 'Jugado', 'Volver a jugar'];
   // 0 = sin orden, 1 = A-Z, 2 = Z-A
   let ordenAZ = 0;
 
@@ -774,31 +797,6 @@
     };
     filaEstado.appendChild(chipOrden);
     $filtros.appendChild(filaEstado);
-
-    const filaClase = document.createElement('div');
-    filaClase.className = 'fila-filtros';
-    filaClase.style.marginLeft = 'auto';
-    const etiquetaClase = document.createElement('span');
-    etiquetaClase.className = 'etiqueta-filtros';
-    etiquetaClase.innerHTML = '<i class="ti ti-category"></i> Clase:';
-    filaClase.appendChild(etiquetaClase);
-    for (const c of CLASES) {
-      const activo = filtroClase === c.valor;
-      const btn = document.createElement('button');
-      btn.className = 'chip' + (activo ? ' activo' : '');
-      const i = document.createElement('i');
-      i.className = c.icono;
-      btn.appendChild(i);
-      btn.appendChild(document.createTextNode(' ' + c.etiqueta));
-      btn.onclick = () => {
-        filtroClase = filtroClase === c.valor ? '' : c.valor;
-        construirFiltros();
-        resetCargaInfinita();
-        render();
-      };
-      filaClase.appendChild(btn);
-    }
-    $filtros.appendChild(filaClase);
   }
 
   let debounceTimer = null;
@@ -837,6 +835,12 @@
   $btnSubir.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   document.getElementById('btnAgregar').onclick = abrirCrear;
+  document.getElementById('btnBuscarJuego').onclick = ejecutarBuscarJuego;
+  document.getElementById('btnCerrarBuscarJuego').onclick = cerrarBuscarJuego;
+  $buscarJuegoInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') ejecutarBuscarJuego();
+  });
+  $overlayBuscarJuego.addEventListener('click', e => { if (e.target === $overlayBuscarJuego) cerrarBuscarJuego(); });
   document.getElementById('btnLimpiar').onclick = () => {
     $buscar.value = '';
     clearTimeout(debounceTimer);
@@ -860,7 +864,6 @@
     $formulario.fPoster.value = '';
     mostrarToast('Poster eliminado');
   };
-  $formulario.fClase.addEventListener('change', actualizarLabelPelicula);
   $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
   $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
   document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
@@ -900,6 +903,7 @@
     cerrarModal();
     cerrarSelectorPoster();
     cerrarAleatorio();
+    cerrarBuscarJuego();
   });
   $formulario.addEventListener('submit', guardar);
 

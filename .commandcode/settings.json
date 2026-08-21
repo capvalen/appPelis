@@ -15,7 +15,13 @@
       "Shell(curl -s -L -o /dev/null -w %{http_code} %{url_effective}\\n http://localhost:4173/config.html)",
       "Shell(curl -s http://localhost:4173/config.html)",
       "Shell(curl -s http://localhost:4173/)",
-      "Shell(curl -s http://localhost:4173/assets/main-xr9sAVPy.js)"
+      "Shell(curl -s http://localhost:4173/assets/main-xr9sAVPy.js)",
+      "Shell(node -e  const fs = require('fs'); const html = fs.readFileSync('index.html', 'utf8'); const checks = [ 'id=\"fRecomendable\"', 'id=\"btnRecomendar\"', 'fRecomendable.checked', 'recomendable: $formulario.fRecomendable.checked', 'actualizarBtnRecomendar', 'html.tema-oscuro #toast' ]; let ok = true; for (const c of checks) { const found = html.includes(c); console.log((found ? 'OK ' : 'FALTA ') + c); if (!found) ok = false; } process.exit(ok ? 0 : 1); )",
+      "Shell(cd /home/karl/Proyectos/appPelis && node -e \" const fs = require('fs'); const html = fs.readFileSync('index.html', 'utf8'); const m = html.match(/<style>([\\s\\S]*?)<\\/style>/); if (!m) { console.error('no style block'); process.exit(1); } fs.writeFileSync('style.css', m[1]); console.log('extraído', m[1].length, 'caracteres'); \" && head -5 style.css && echo '...' && tail -5 style.css)",
+      "Shell(cp:*)",
+      "Shell(cd /home/karl/Proyectos/appPelis && for t in 'clase = \"juego\"' 'fUbicacion' 'dUbicacion' 'ubicacion:' 'Juegos ~ Infocat' 'Agregar juego' 'Editar juego' 'juego aleatorio'; do c=$(grep -c \"$t\" juegos.html); echo \"$t -> $c\"; done)",
+      "Shell(cd /home/karl/Proyectos/appPelis && for t in \"clase: 'juego'\" 'search/autocomplete/' 'grids/game/' 'VITE_API_STEAM' 'fUbicacion' 'overlayBuscarJuego' 'buscarJuegoSteam' 'buscarPortadasSteam'; do c=$(grep -c \"$t\" juegos.html); echo \"$t -> $c\"; done)",
+      "Shell(deno check main.ts 2 >& 1)"
     ],
     "deny": [],
     "defaultMode": "default"
