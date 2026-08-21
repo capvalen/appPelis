@@ -54,7 +54,7 @@
       <button type="button" class="btn-menu" id="btnMenu" title="Menú"><i class="ti ti-menu-2"></i></button>
       <nav class="menu-panel" id="menuPanel">
         <a href="/index.html"><i class="ti ti-device-tv"></i> Películas / Series</a>
-        <a href="/juegos.html" class="activo"><i class="ti ti-gamepad"></i> Juegos</a>
+        <a href="/juegos.html" class="activo"><i class="ti ti-device-gamepad"></i> Juegos</a>
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
@@ -86,7 +86,7 @@
     <form id="formulario">
       <input type="hidden" id="fId">
       <div class="campo">
-        <label for="fPelicula"><i class="ti ti-gamepad"></i> <span id="labelPelicula">Nombre del juego</span></label>
+        <label for="fPelicula"><i class="ti ti-device-gamepad"></i> <span id="labelPelicula">Nombre del juego</span></label>
         <div class="campo-con-boton">
           <input type="text" id="fPelicula" required>
           <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar nombre"><i class="ti ti-clipboard"></i></button>
@@ -185,7 +185,7 @@
   <div class="modal">
     <h2><i class="ti ti-search"></i> Buscar juego</h2>
     <div class="campo">
-      <label for="buscarJuegoInput"><i class="ti ti-gamepad"></i> Nombre del juego</label>
+      <label for="buscarJuegoInput"><i class="ti ti-device-gamepad"></i> Nombre del juego</label>
       <input type="text" id="buscarJuegoInput" placeholder="Escribe para buscar...">
     </div>
     <div class="modal-acciones" style="margin-top:0; margin-bottom:14px;">
@@ -368,7 +368,7 @@
   function badgeClase(clase) {
     const c = (clase || '').toLowerCase();
     if (c === 'juego') {
-      return '<span class="badge clase"><i class="ti ti-gamepad"></i> Juego</span>';
+      return '<span class="badge clase"><i class="ti ti-device-gamepad"></i> Juego</span>';
     }
     if (c === 'serie') {
       return '<span class="badge clase"><i class="ti ti-armchair"></i> Serie</span>';
@@ -511,7 +511,13 @@
       btn.className = 'btn-buscar-portada';
       btn.id = 'btnBuscarPortada';
       btn.innerHTML = '<i class="ti ti-photo-search"></i> Buscar portada';
-      btn.onclick = abrirBuscarJuego;
+      btn.onclick = () => {
+        if (detalleActual && detalleActual.id_auxiliar) {
+          abrirSelectorPortada(detalleActual.id_auxiliar, detalleActual.pelicula, detalleActual);
+        } else {
+          abrirBuscarJuego();
+        }
+      };
       $dPoster.appendChild(btn);
       return;
     }
@@ -672,7 +678,7 @@
     }
   }
 
-  async function abrirSelectorPortada(steamId, nombre) {
+  async function abrirSelectorPortada(steamId, nombre, registro) {
     $posterGrid.innerHTML = '<div class="cargando">Buscando portadas...</div>';
     try {
       const data = await buscarPortadasSteam(steamId);
@@ -691,7 +697,20 @@
         img.src = urlPortada;
         img.alt = nombre || 'Portada';
         img.loading = 'lazy';
-        img.onclick = () => {
+        img.onclick = async () => {
+          if (registro) {
+            try {
+              await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster: urlPortada }) });
+              registro.poster = urlPortada;
+              mostrarToast('Portada guardada');
+              cerrarOverlay($overlayPoster);
+              await cargar();
+              setTimeout(() => abrirDetalle(registro), 250);
+            } catch (err) {
+              mostrarToast('Error guardando portada: ' + err.message);
+            }
+            return;
+          }
           $formulario.fPoster.value = urlPortada;
           cerrarOverlay($overlayPoster);
           mostrarToast('Portada seleccionada');
@@ -721,6 +740,7 @@
       anio: $formulario.fAnio.value.trim(),
       recomendable: $formulario.fRecomendable.checked
     };
+    if (juegoSteamId) body.id_auxiliar = juegoSteamId;
     try {
       let registro;
       if (modo === 'crear') {
