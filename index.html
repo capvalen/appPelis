@@ -29,6 +29,7 @@
       <nav class="menu-panel" id="menuPanel">
         <a href="/index.html" class="activo"><i class="ti ti-device-tv"></i> Películas / Series</a>
         <a href="/juegos.html"><i class="ti ti-device-gamepad"></i> Juegos</a>
+        <a href="/reportes.html"><i class="ti ti-chart-bar"></i> Reportes</a>
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
@@ -132,8 +133,8 @@
     </div>
     <div class="sub" id="dVisto"></div>
     <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
-    <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="etiqueta">Plataforma</span><span class="valor" id="dPlataforma"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
+    <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
     <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
     <div class="modal-acciones">
       <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
@@ -233,6 +234,10 @@
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
+  function iconoNota(nota) {
+    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+  }
+
   function nombrePlataforma(p) {
     return p.plataforma.split(' ').map(capitalizar).join(' ');
   }
@@ -297,7 +302,7 @@
         const div = document.createElement('div');
         div.className = 'carrusel-item';
         const img = document.createElement('img');
-        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/movies.webp';
+        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/want.jpg';
         img.alt = p.pelicula;
         img.loading = 'lazy';
         div.appendChild(img);
@@ -379,10 +384,11 @@
         : '/assets/want.jpg';
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
+        (p.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
-            (p.nota ? '<span class="nota"><i class="ti ti-star-filled estrella"></i> ' + p.nota + '</span>' : '') +
+            (p.nota ? '<span class="nota"><i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="acciones">' +
@@ -401,7 +407,7 @@
       '<div class="nombre"></div>' +
       '<div class="meta">' + badge(p.visto) + badgeClase(p.clase) +
         (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
-        (p.nota ? '<span class="nota">'  + ' <i class="ti ti-star-filled estrella"></i> ' + p.nota + '</span>' : '') +
+        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
       '</div>' +
       '<div class="acciones">' +
         '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
@@ -491,15 +497,14 @@
     $dDato.textContent = p.dato ? p.dato : '—';
     const plat = plataformas.find(x => String(x.id) === String(p.plataforma));
     if (plat && plat.logo) {
-      $dPlataforma.innerHTML = '<img class="logo-plataforma" src="/logos/' + plat.logo + '" alt="' + nombrePlataforma(plat) + '">' +
-        '<span>' + nombrePlataforma(plat) + '</span>';
+      $dPlataforma.innerHTML = '<span class="plataforma-tooltip-wrap"><span class="plataforma-tooltip">' + nombrePlataforma(plat) + '</span><img class="logo-plataforma" src="/logos/' + plat.logo + '" alt="' + nombrePlataforma(plat) + '"></span>';
       $dPlataformaFila.style.display = '';
     } else {
       $dPlataforma.innerHTML = '';
       $dPlataformaFila.style.display = 'none';
     }
     $dNota.innerHTML = p.nota
-      ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
+      ? '<i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota
       : '—';
     $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
     mostrarPoster(p.poster);
@@ -559,7 +564,7 @@
       aleaActual = elegida;
       $aleaBusqueda.style.display = 'none';
       $aleaResultado.innerHTML =
-        '<img class="alea-img" src="/assets/movies.webp" alt="Película">' +
+        '<img class="alea-img" src="' + (elegida.poster ? 'https://image.tmdb.org/t/p/w500/' + elegida.poster : '/assets/want.jpg') + '" alt="Película">' +
         '<div class="alea-hora">Es hora de ver...</div>' +
         '<div class="alea-titulo-fila">' +
           '<div class="alea-titulo">' + tituloConAnio(elegida) + '</div>' +
@@ -937,6 +942,14 @@
     document.getElementById('menuPanel').classList.toggle('abierto');
   };
   document.addEventListener('click', () => document.getElementById('menuPanel').classList.remove('abierto'));
+  // tooltip de plataforma: en táctil se muestra al tocar y se oculta al tocar fuera
+  document.addEventListener('click', (e) => {
+    const wrap = e.target.closest('.plataforma-tooltip-wrap');
+    document.querySelectorAll('.plataforma-tooltip-wrap.mostrar').forEach(w => {
+      if (w !== wrap) w.classList.remove('mostrar');
+    });
+    if (wrap) wrap.classList.toggle('mostrar');
+  });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     cerrarDetalle();

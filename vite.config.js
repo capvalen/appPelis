@@ -8,7 +8,8 @@ export default defineConfig({
       input: {
         main: 'index.html',
         juegos: 'juegos.html',
-        config: 'config.html'
+        config: 'config.html',
+        reportes: 'reportes.html'
       }
     }
   }

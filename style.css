@@ -186,6 +186,8 @@
     scroll-snap-align: start;
     cursor: pointer;
     transition: transform .15s;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .carrusel .carrusel-item:hover { transform: scale(1.05); }
   .carrusel .carrusel-item img {
@@ -341,6 +343,7 @@
     padding-bottom: 96px;
   }
   .tarjeta {
+    position: relative;
     border: 1px solid var(--borde);
     border-radius: 14px;
     padding: 16px;
@@ -349,6 +352,55 @@
     flex-direction: column;
     gap: 10px;
     transition: border-color .15s, box-shadow .15s, transform .15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .jugando-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .92);
+    color: #f5b301;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+    font-size: 1.15rem;
+    pointer-events: none;
+  }
+  .tarjeta.portada .jugando-badge { top: 8px; left: 8px; }
+  .cinta-viendo {
+    position: absolute;
+    top: 18px;
+    left: -32px;
+    transform: rotate(-35deg);
+    transform-origin: center;
+    z-index: 3;
+    background: #f5b301;
+    color: #22143a;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 4px 36px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .tarjeta.portada .cinta-viendo { top: 11px; left: -30px; }
+  .tarjeta .meta .jugando-badge {
+    position: static;
+    display: inline-flex;
+    width: auto;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+    color: #f5b301;
+    font-size: 1.1rem;
   }
   html.tema-oscuro .tarjeta { background: #111632; }
   .tarjeta:hover {
@@ -434,6 +486,8 @@
   .badge.Jugando { background: #22c55e; color: #fff; }
   .badge.Jugado { background: var(--morado); color: #fff; }
   .badge.Volver { background: var(--morado-claro); color: var(--morado-oscuro); }
+  .badge.Recomendado { background: var(--morado); color: #fff; }
+  .badge.NoRecomendado { background: var(--superficie-suave); color: var(--texto-suave); }
   .badge.clase { background: var(--superficie-suave); color: var(--texto-suave); }
   .badge.clase i { display: inline-block; vertical-align: -1px; }
   .vacio {
@@ -624,7 +678,33 @@
   .detalle-fila:last-of-type { border-bottom: none; }
   .detalle-fila .etiqueta { flex: 0 0 80px; font-size: .85rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .03em; padding-top: 2px; }
   .detalle-fila .valor { flex: 1; font-size: .95rem; word-break: break-word; }
+  .detalle-fila#dPlataformaFila { justify-content: center; padding: 6px 0; }
+  .detalle-fila#dPlataformaFila .valor { flex: 0 0 auto; display: flex; justify-content: center; }
   .logo-plataforma { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; vertical-align: middle; margin-right: 8px; background: #fff; padding: 4px; }
+  .plataforma-tooltip-wrap { position: relative; display: inline-flex; }
+  .plataforma-tooltip-wrap .plataforma-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--texto);
+    color: var(--superficie);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .15s, visibility .15s;
+    z-index: 6;
+  }
+  .plataforma-tooltip-wrap:hover .plataforma-tooltip,
+  .plataforma-tooltip-wrap.mostrar .plataforma-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
   .estrella { color: #facc15; font-size: 1.05rem; display: inline-block; }
   .tarjeta .meta .estrella { vertical-align: middle; }
   .detalle-fila .valor .estrella { vertical-align: middle; }

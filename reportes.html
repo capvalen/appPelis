@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes - Infocat</title>
+  <link rel="icon" type="image/png" href="/assets/martian.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/style.css">
+<style>
+  .resultado-fila {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .resultado-fila .nombre { flex: 1; font-weight: 500; }
+  .resultado-fila .anio { color: var(--texto-suave); font-size: .9rem; white-space: nowrap; }
+  .resultado-fila .logo-plataforma { width: 28px; height: 28px; object-fit: contain; }
+  .resultado-fila .nota {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: .8rem;
+    background: var(--morado-mas-claro);
+    color: var(--morado-oscuro);
+    padding: 1px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .resultado-fila .nota .estrella { color: #facc15; font-size: .95rem; }
+</style>
+<script>
+  // Aplicar el tema antes del primer render para evitar parpadeo
+  (function () {
+    var oscuro = localStorage.getItem('modoOscuro') !== 'false';
+    if (oscuro) document.documentElement.classList.add('tema-oscuro');
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <img class="logo" src="/assets/martian.png" alt="Videoteca">
+    <h1>Reportes</h1>
+  </div>
+  <div style="display:flex; align-items:center; gap:6px;">
+    <div class="menu-wrap">
+      <button type="button" class="btn-menu" id="btnMenu" title="Menú"><i class="ti ti-menu-2"></i></button>
+      <nav class="menu-panel" id="menuPanel">
+        <a href="/index.html"><i class="ti ti-device-tv"></i> Películas / Series</a>
+        <a href="/juegos.html"><i class="ti ti-device-gamepad"></i> Juegos</a>
+        <a href="/reportes.html" class="activo"><i class="ti ti-chart-bar"></i> Reportes</a>
+        <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
+      </nav>
+    </div>
+    <a class="btn-config" href="/config.html" title="Configuración"><i class="ti ti-settings"></i></a>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="buscar-wrap">
+    <input type="text" id="buscar" placeholder="Buscar por título o dato...">
+    <button class="btn-limpiar" id="btnLimpiar" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
+  </div>
+</div>
+
+<div class="filtros" id="filtros">
+  <div class="fila-filtros" id="filaIzq">
+    <span class="etiqueta-filtros"><i class="ti ti-filter-code"></i> Filtros:</span>
+  </div>
+  <div class="fila-filtros" id="filaDer">
+    <button class="btn-primario" id="btnLimpiarFiltros"><i class="ti ti-eraser"></i> Limpiar</button>
+  </div>
+</div>
+
+<div class="filtros" id="filtrosReco">
+  <div class="fila-filtros" id="filaReco">
+    <span class="etiqueta-filtros"><i class="ti ti-thumb-up"></i> Recomendación:</span>
+  </div>
+</div>
+
+<div class="filtros" id="filtros2">
+  <div class="fila-filtros" id="filaEstado">
+    <span class="etiqueta-filtros"><i class="ti ti-eye"></i> Estado:</span>
+  </div>
+  <div class="fila-filtros" id="filaAnio">
+    <span class="etiqueta-filtros"><i class="ti ti-calendar"></i> Año:</span>
+    <input type="number" id="fAnio" min="1888" max="2100" step="1" placeholder="Ej. 2024" style="width:110px">
+  </div>
+  <div class="fila-filtros" id="filaPlataforma" style="margin-left:auto">
+    <span class="etiqueta-filtros"><i class="ti ti-device-tv"></i> Plataforma:</span>
+  </div>
+</div>
+
+<div class="contador" id="contador"></div>
+<div id="lista"></div>
+
+<div id="toast"></div>
+<button id="btnSubir" title="Ir al inicio"><i class="ti ti-chevron-up"></i></button>
+
+<div class="overlay" id="overlayDetalle">
+  <div class="modal modal-detalle">
+    <div id="dPoster"></div>
+    <div class="titulo-fila">
+      <div class="titulo" id="dPelicula"></div>
+      <button type="button" class="btn-copiar" id="btnCopiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>
+    </div>
+    <div class="sub" id="dVisto"></div>
+    <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
+    <div class="detalle-fila" id="dUbicacionFila" style="display:none"><span class="etiqueta">Ubicación</span><span class="valor" id="dUbicacion"></span></div>
+    <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
+    <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
+    <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
+    <div class="modal-acciones">
+      <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
+  const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
+
+  const $lista = document.getElementById('lista');
+  const $buscar = document.getElementById('buscar');
+  const $contador = document.getElementById('contador');
+  const $toast = document.getElementById('toast');
+  const $btnSubir = document.getElementById('btnSubir');
+  const $filaIzq = document.getElementById('filaIzq');
+  const $filaReco = document.getElementById('filaReco');
+  const $filaEstado = document.getElementById('filaEstado');
+  const $filaPlataforma = document.getElementById('filaPlataforma');
+  const $fAnio = document.getElementById('fAnio');
+  const $overlayDetalle = document.getElementById('overlayDetalle');
+  const $dPoster = document.getElementById('dPoster');
+  const $dPelicula = document.getElementById('dPelicula');
+  const $dVisto = document.getElementById('dVisto');
+  const $dDato = document.getElementById('dDato');
+  const $dPlataformaFila = document.getElementById('dPlataformaFila');
+  const $dPlataforma = document.getElementById('dPlataforma');
+  const $dUbicacionFila = document.getElementById('dUbicacionFila');
+  const $dUbicacion = document.getElementById('dUbicacion');
+  const $dNota = document.getElementById('dNota');
+  const $dRecomendableFila = document.getElementById('dRecomendableFila');
+  const $btnCopiar = document.getElementById('btnCopiar');
+  let detalleActual = null;
+
+  let registros = [];
+  let plataformas = [];
+  let filtro = '';
+  let filtroTipo = '';
+  let filtroRecomendado = '';
+  let filtroEstado = '';
+  let filtroPlataforma = '';
+  const LOTE = 50;
+  let visiblesMostrados = LOTE;
+  let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
+
+  function normalizar(s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function capitalizar(s) {
+    if (!s) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function tituloConAnio(r) {
+    const base = capitalizar(r.pelicula);
+    return r.anio ? base + ' (' + r.anio + ')' : base;
+  }
+
+  function posterUrl(r) {
+    if (!r.poster) return (r.clase || '').toLowerCase() === 'juego' ? '/assets/playing.jpg' : '/assets/want.jpg';
+    return r.poster.startsWith('http') ? r.poster : 'https://image.tmdb.org/t/p/w500/' + r.poster;
+  }
+
+  function iconoNota(nota) {
+    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+  }
+
+  function badge(visto, clase) {
+    const esJuego = (clase || '').toLowerCase() === 'juego';
+    if (esJuego) {
+      const cls = visto === 'Jugado' ? 'Jugado'
+        : visto === 'Jugando' ? 'Jugando'
+        : visto === 'Volver a jugar' ? 'Volver'
+        : 'Pendiente';
+      return '<span class="badge ' + cls + '">' + (visto || 'Pendiente') + '</span>';
+    }
+    const cls = visto === 'Visto' ? 'Visto'
+      : visto === 'Falta ver' ? 'Falta'
+      : visto === 'Ver otra vez' ? 'Ver'
+      : visto === 'Viendo' ? 'Viendo'
+      : 'Urgente';
+    return '<span class="badge ' + cls + '">' + visto + '</span>';
+  }
+
+  function badgeClase(clase) {
+    const c = (clase || '').toLowerCase();
+    if (c === 'juego') return '<span class="badge clase"><i class="ti ti-device-gamepad"></i> Juego</span>';
+    if (c === 'serie') return '<span class="badge clase"><i class="ti ti-armchair"></i> Serie</span>';
+    return '<span class="badge clase"><i class="ti ti-device-tv"></i> Película</span>';
+  }
+
+  function abrirOverlay($el) {
+    $el.style.display = 'flex';
+    $el.offsetHeight;
+    $el.classList.add('abierto', 'animado');
+  }
+  function cerrarOverlay($el) {
+    $el.classList.remove('animado');
+    setTimeout(() => {
+      $el.classList.remove('abierto');
+      $el.style.display = '';
+    }, 250);
+  }
+
+  function abrirDetalle(r) {
+    detalleActual = r;
+    $dPelicula.textContent = tituloConAnio(r);
+    $dVisto.innerHTML = badge(r.visto, r.clase) + badgeClase(r.clase) + badgeRecomendado(r.recomendable);
+    $dDato.textContent = r.dato ? r.dato : '—';
+    const plat = plataformaDe(r);
+    if (plat && plat.logo) {
+      $dPlataforma.innerHTML = '<span class="plataforma-tooltip-wrap"><span class="plataforma-tooltip">' + nombrePlataforma(plat) + '</span><img class="logo-plataforma" src="/logos/' + plat.logo + '" alt="' + nombrePlataforma(plat) + '"></span>';
+      $dPlataformaFila.style.display = '';
+    } else {
+      $dPlataforma.innerHTML = '';
+      $dPlataformaFila.style.display = 'none';
+    }
+    const esJuego = (r.clase || '').toLowerCase() === 'juego';
+    $dUbicacionFila.style.display = esJuego && r.ubicacion ? '' : 'none';
+    $dUbicacion.textContent = r.ubicacion || '';
+    $dNota.innerHTML = r.nota
+      ? '<i class="' + iconoNota(r.nota) + ' estrella"></i> ' + r.nota
+      : '—';
+    $dRecomendableFila.style.display = r.recomendable ? '' : 'none';
+    mostrarPoster(r);
+    abrirOverlay($overlayDetalle);
+  }
+
+  function mostrarPoster(r) {
+    $dPoster.innerHTML = '';
+    $dPoster.className = '';
+    if (!r.poster) {
+      $dPoster.className = 'sin-poster';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-buscar-portada';
+      btn.innerHTML = '<i class="ti ti-photo-search"></i> Sin portada';
+      $dPoster.appendChild(btn);
+      return;
+    }
+    $dPoster.className = 'tiene-poster';
+    const img = document.createElement('img');
+    img.src = posterUrl(r);
+    img.alt = 'Póster';
+    img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.className = ''; };
+    $dPoster.appendChild(img);
+  }
+
+  function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
+
+  function nombrePlataforma(p) {
+    return p.plataforma.split(' ').map(capitalizar).join(' ');
+  }
+
+  function badgeRecomendado(rec) {
+    return '<span class="badge' + (rec ? ' Recomendado' : ' NoRecomendado') + '"><i class="ti ti-thumb-up"></i> ' + (rec ? 'Recomendado' : 'No recomendado') + '</span>';
+  }
+
+  function plataformaDe(rec) {
+    return plataformas.find(x => String(x.id) === String(rec.plataforma));
+  }
+
+  async function api(path = '', options = {}) {
+    const res = await fetch(BASE + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    if (!res.ok) {
+      let msg = 'Error ' + res.status;
+      try {
+        const e = await res.json();
+        msg = e.message || msg;
+      } catch (_) {}
+      throw new Error(msg);
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function cargarPlataformas() {
+    const res = await fetch(BASE_PLATAFORMAS + '?perPage=200');
+    if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
+    const data = await res.json();
+    plataformas = data.items || [];
+    $filaPlataforma.innerHTML = '<span class="etiqueta-filtros"><i class="ti ti-device-tv"></i> Plataforma:</span>';
+    const botones = [{ etiqueta: 'Todas', valor: '' }]
+      .concat(plataformas.map(p => ({ etiqueta: nombrePlataforma(p), valor: p.id })));
+    for (const b of botones) {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (filtroPlataforma === b.valor ? ' activo' : '');
+      btn.textContent = b.etiqueta;
+      btn.onclick = () => {
+        filtroPlataforma = filtroPlataforma === b.valor ? '' : b.valor;
+        cargarPlataformas();
+        resetCargaInfinita();
+        render();
+      };
+      $filaPlataforma.appendChild(btn);
+    }
+  }
+
+  const TIPOS = [
+    { etiqueta: 'Todos', valor: '' },
+    { etiqueta: 'Películas / Series', valor: 'video' },
+    { etiqueta: 'Juegos', valor: 'juego' }
+  ];
+  const RECOMENDADOS = [
+    { etiqueta: 'Todos', valor: '' },
+    { etiqueta: 'Recomendados', valor: 'si' },
+    { etiqueta: 'Sin recomendación', valor: 'no' }
+  ];
+
+  const ESTADOS_VIDEO = ['', 'Visto', 'Falta ver', 'Ver otra vez', 'Urgente', 'Viendo'];
+  const ESTADOS_JUEGO = ['', 'Pendiente', 'Jugado', 'Jugando', 'Volver a jugar'];
+
+  function estadosSegunTipo() {
+    return filtroTipo === 'juego' ? ESTADOS_JUEGO : ESTADOS_VIDEO;
+  }
+
+  function construirFiltros() {
+    // Fila 1: tipo (izquierda) + botón limpiar (derecha, estático en HTML)
+    $filaIzq.innerHTML = '<span class="etiqueta-filtros"><i class="ti ti-filter-code"></i> Filtros:</span>';
+    for (const t of TIPOS) {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (filtroTipo === t.valor ? ' activo' : '');
+      btn.textContent = t.etiqueta;
+      btn.onclick = () => {
+        filtroTipo = filtroTipo === t.valor ? '' : t.valor;
+        // si el estado activo no pertenece al nuevo tipo, se resetea
+        const estados = estadosSegunTipo();
+        if (!estados.includes(filtroEstado)) filtroEstado = '';
+        construirFiltros();
+        resetCargaInfinita();
+        render();
+      };
+      $filaIzq.appendChild(btn);
+    }
+    // Fila 2: recomendación
+    $filaReco.innerHTML = '<span class="etiqueta-filtros"><i class="ti ti-thumb-up"></i> Recomendación:</span>';
+    for (const r of RECOMENDADOS) {
+      const btn = document.createElement('button');
+      btn.className = 'chip' + (filtroRecomendado === r.valor ? ' activo' : '');
+      btn.textContent = r.etiqueta;
+      btn.onclick = () => {
+        filtroRecomendado = filtroRecomendado === r.valor ? '' : r.valor;
+        construirFiltros();
+        resetCargaInfinita();
+        render();
+      };
+      $filaReco.appendChild(btn);
+    }
+    // Fila 3: estado (depende del tipo)
+    $filaEstado.innerHTML = '<span class="etiqueta-filtros"><i class="ti ti-eye"></i> Estado:</span>';
+    const estados = estadosSegunTipo();
+    for (const v of estados) {
+      const btn = document.createElement('button');
+      const etiqueta = v === '' ? 'Todos' : v;
+      btn.className = 'chip' + (filtroEstado === v ? ' activo' : '');
+      btn.textContent = etiqueta;
+      btn.onclick = () => {
+        filtroEstado = filtroEstado === v ? '' : v;
+        construirFiltros();
+        resetCargaInfinita();
+        render();
+      };
+      $filaEstado.appendChild(btn);
+    }
+  }
+
+  async function cargar() {
+    let page = 1;
+    let items = [];
+    while (true) {
+      const data = await api('?page=' + page + '&perPage=500&sort=-created');
+      items = items.concat(data.items);
+      if (page >= data.totalPages) break;
+      page++;
+    }
+    registros = items;
+    render();
+  }
+
+  function tarjeta(r) {
+    if (modoVista === 'portada') {
+      const div = document.createElement('div');
+      div.className = 'tarjeta portada';
+      div.innerHTML =
+        '<img src="' + posterUrl(r) + '" alt="' + r.pelicula + '" loading="lazy">' +
+        ((r.clase || '').toLowerCase() !== 'juego' && r.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' : '') +
+        ((r.clase || '').toLowerCase() === 'juego' && r.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
+        '<div class="info">' +
+          '<div class="nombre"></div>' +
+          '<div class="meta">' +
+            (r.anio ? '<span class="anio">' + r.anio + '</span>' : '') +
+            (r.nota ? '<span class="nota"><i class="' + iconoNota(r.nota) + ' estrella"></i> ' + r.nota + '</span>' : '') +
+            (r.recomendable ? '<span class="nota"><i class="ti ti-thumb-up-filled"></i></span>' : '') +
+          '</div>' +
+        '</div>';
+      div.querySelector('.nombre').textContent = capitalizar(r.pelicula);
+      div.onclick = () => abrirDetalle(r);
+      return div;
+    }
+    const div = document.createElement('div');
+    div.className = 'resultado-fila';
+    const platInfo = plataformaDe(r);
+    const logo = platInfo && platInfo.logo
+      ? '<img class="logo-plataforma" src="/logos/' + platInfo.logo + '" alt="' + nombrePlataforma(platInfo) + '">'
+      : '';
+    div.innerHTML =
+      '<div class="nombre">' + tituloConAnio(r) + '</div>' +
+      ((r.clase || '').toLowerCase() !== 'juego' && r.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' : '') +
+      ((r.clase || '').toLowerCase() === 'juego' && r.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
+      (r.nota ? '<span class="nota"><i class="' + iconoNota(r.nota) + ' estrella"></i> ' + r.nota + '</span>' : '') +
+      badgeClase(r.clase) +
+      badgeRecomendado(r.recomendable) +
+      logo;
+    div.onclick = () => abrirDetalle(r);
+    return div;
+  }
+
+  function render() {
+    const q = normalizar(filtro);
+    const tipo = filtroTipo;
+    const rec = filtroRecomendado;
+    const estado = filtroEstado;
+    const anio = $fAnio.value.trim();
+    const plat = filtroPlataforma;
+
+    const visibles = registros.filter(r => {
+      const clase = (r.clase || '').toLowerCase();
+      const esJuego = clase === 'juego';
+      if (tipo === 'video' && esJuego) return false;
+      if (tipo === 'juego' && !esJuego) return false;
+      if (rec === 'si' && !r.recomendable) return false;
+      if (rec === 'no' && r.recomendable) return false;
+      if (estado && r.visto !== estado) return false;
+      if (anio && String(r.anio) !== anio) return false;
+      if (plat && String(r.plataforma) !== plat) return false;
+      if (q && !normalizar(r.pelicula).includes(q) && !normalizar(r.dato || '').includes(q)) return false;
+      return true;
+    });
+
+    visibles.sort((a, b) => (b.anio || 0) - (a.anio || 0) || a.pelicula.localeCompare(b.pelicula, 'es'));
+
+    $contador.textContent = visibles.length + ' resultado' + (visibles.length === 1 ? '' : 's');
+    $lista.classList.toggle('modo-portada', modoVista === 'portada');
+    $lista.innerHTML = '';
+    if (!registros.length) {
+      const v = document.createElement('div');
+      v.className = 'vacio';
+      v.textContent = 'Cargando...';
+      $lista.appendChild(v);
+      return;
+    }
+    if (!visibles.length) {
+      const v = document.createElement('div');
+      v.className = 'vacio';
+      v.textContent = 'Sin resultados';
+      $lista.appendChild(v);
+      return;
+    }
+    const aMostrar = visibles.slice(0, visiblesMostrados);
+    for (const r of aMostrar) $lista.appendChild(tarjeta(r));
+    if (visibles.length > visiblesMostrados) {
+      const c = document.createElement('div');
+      c.className = 'cargando';
+      c.textContent = 'Cargando más...';
+      c.id = 'indicadorCarga';
+      $lista.appendChild(c);
+    }
+  }
+
+  function mostrarToast(msg) {
+    $toast.innerHTML = '<i class="ti ti-location-check"></i>' + msg;
+    $toast.classList.add('visible');
+    clearTimeout(mostrarToast._t);
+    mostrarToast._t = setTimeout(() => $toast.classList.remove('visible'), 2500);
+  }
+
+  function resetCargaInfinita() { visiblesMostrados = LOTE; }
+
+  function aplicarFiltros() {
+    resetCargaInfinita();
+    render();
+  }
+
+  let debounceTimer = null;
+  $buscar.addEventListener('input', e => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      filtro = e.target.value.trim();
+      resetCargaInfinita();
+      render();
+    }, 300);
+  });
+  $buscar.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    clearTimeout(debounceTimer);
+    filtro = e.target.value.trim();
+    resetCargaInfinita();
+    render();
+  });
+  document.getElementById('btnLimpiar').onclick = () => {
+    $buscar.value = '';
+    clearTimeout(debounceTimer);
+    filtro = '';
+    resetCargaInfinita();
+    render();
+    $buscar.focus();
+  };
+  document.getElementById('btnLimpiarFiltros').onclick = () => {
+    filtroTipo = '';
+    filtroRecomendado = '';
+    filtroEstado = '';
+    filtroPlataforma = '';
+    $fAnio.value = '';
+    construirFiltros();
+    cargarPlataformas();
+    resetCargaInfinita();
+    render();
+  };
+  $fAnio.addEventListener('input', aplicarFiltros);
+
+  window.addEventListener('scroll', () => {
+    $btnSubir.classList.toggle('visible', window.scrollY > 300);
+    if (cargandoLote) return;
+    const final = document.documentElement.scrollHeight - window.innerHeight;
+    if (window.scrollY >= final - 600) {
+      const total = document.querySelectorAll('#lista .tarjeta, #lista .resultado-fila').length;
+      if (total >= visiblesMostrados) {
+        cargandoLote = true;
+        visiblesMostrados += LOTE;
+        render();
+        cargandoLote = false;
+      }
+    }
+  }, { passive: true });
+  $btnSubir.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
+  document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
+  $btnCopiar.onclick = () => {
+    if (!detalleActual) return;
+    navigator.clipboard.writeText(detalleActual.pelicula).then(() => {
+      mostrarToast('Título copiado');
+    }).catch(() => {
+      mostrarToast('Error al copiar');
+    });
+  };
+
+  document.getElementById('btnMenu').onclick = (e) => {
+    e.stopPropagation();
+    document.getElementById('menuPanel').classList.toggle('abierto');
+  };
+  document.addEventListener('click', () => document.getElementById('menuPanel').classList.remove('abierto'));
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    cerrarDetalle();
+    document.getElementById('menuPanel').classList.remove('abierto');
+  });
+
+  construirFiltros();
+  cargarPlataformas().catch(err => console.error('Error cargando plataformas', err));
+  cargar().catch(err => {
+    $lista.innerHTML = '';
+    const v = document.createElement('div');
+    v.className = 'vacio';
+    v.textContent = 'No se pudo cargar: ' + err.message;
+    $lista.appendChild(v);
+  });
+</script>
+
+</body>
+</html>

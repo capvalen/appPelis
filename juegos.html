@@ -55,6 +55,7 @@
       <nav class="menu-panel" id="menuPanel">
         <a href="/index.html"><i class="ti ti-device-tv"></i> Películas / Series</a>
         <a href="/juegos.html" class="activo"><i class="ti ti-device-gamepad"></i> Juegos</a>
+        <a href="/reportes.html"><i class="ti ti-chart-bar"></i> Reportes</a>
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
@@ -263,6 +264,10 @@
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
+  function iconoNota(nota) {
+    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+  }
+
   async function api(path = '', options = {}) {
     const res = await fetch(BASE + path, {
       headers: { 'Content-Type': 'application/json' },
@@ -392,10 +397,11 @@
         : '/assets/playing.jpg';
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
+        (p.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
-            (p.nota ? '<span class="nota"><i class="ti ti-star-filled estrella"></i> ' + p.nota + '</span>' : '') +
+            (p.nota ? '<span class="nota"><i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="acciones">' +
@@ -412,9 +418,11 @@
     div.className = 'tarjeta';
     div.innerHTML =
       '<div class="nombre"></div>' +
-      '<div class="meta">' + badge(p.visto) + badgeClase(p.clase) +
+      '<div class="meta">' +
+        (p.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
+        badge(p.visto) + badgeClase(p.clase) +
         (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
-        (p.nota ? '<span class="nota">'  + ' <i class="ti ti-star-filled estrella"></i> ' + p.nota + '</span>' : '') +
+        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
       '</div>' +
       '<div class="acciones">' +
         '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
@@ -562,7 +570,7 @@
       aleaActual = elegida;
       $aleaBusqueda.style.display = 'none';
       $aleaResultado.innerHTML =
-        '<img class="alea-img" src="/assets/movies.webp" alt="Película">' +
+        '<img class="alea-img" src="' + (elegida.poster ? elegida.poster : '/assets/playing.jpg') + '" alt="Película">' +
         '<div class="alea-hora">Es hora de ver...</div>' +
         '<div class="alea-titulo-fila">' +
           '<div class="alea-titulo">' + tituloConAnio(elegida) + '</div>' +
@@ -773,7 +781,7 @@
     }
   }
 
-  const ESTADOS = ['Pendiente', 'Jugando', 'Jugado', 'Volver a jugar'];
+  const ESTADOS = ['Pendiente', 'Jugado', 'Jugando', 'Volver a jugar'];
   // 0 = sin orden, 1 = A-Z, 2 = Z-A
   let ordenAZ = 0;
 
