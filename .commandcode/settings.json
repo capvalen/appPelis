@@ -21,7 +21,10 @@
       "Shell(cp:*)",
       "Shell(cd /home/karl/Proyectos/appPelis && for t in 'clase = \"juego\"' 'fUbicacion' 'dUbicacion' 'ubicacion:' 'Juegos ~ Infocat' 'Agregar juego' 'Editar juego' 'juego aleatorio'; do c=$(grep -c \"$t\" juegos.html); echo \"$t -> $c\"; done)",
       "Shell(cd /home/karl/Proyectos/appPelis && for t in \"clase: 'juego'\" 'search/autocomplete/' 'grids/game/' 'VITE_API_STEAM' 'fUbicacion' 'overlayBuscarJuego' 'buscarJuegoSteam' 'buscarPortadasSteam'; do c=$(grep -c \"$t\" juegos.html); echo \"$t -> $c\"; done)",
-      "Shell(deno check main.ts 2 >& 1)"
+      "Shell(deno check main.ts 2 >& 1)",
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_plataformas/records?perPage=20)",
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_peliculas/records?perPage=3&sort=-created)",
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_plataformas/records?perPage=50)"
     ],
     "deny": [],
     "defaultMode": "default"

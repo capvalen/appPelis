@@ -431,6 +431,7 @@
     border-radius: 999px;
   }
   .badge.Pendiente { background: var(--morado-mas-claro); color: var(--morado-oscuro); }
+  .badge.Jugando { background: #22c55e; color: #fff; }
   .badge.Jugado { background: var(--morado); color: #fff; }
   .badge.Volver { background: var(--morado-claro); color: var(--morado-oscuro); }
   .badge.clase { background: var(--superficie-suave); color: var(--texto-suave); }
@@ -623,6 +624,7 @@
   .detalle-fila:last-of-type { border-bottom: none; }
   .detalle-fila .etiqueta { flex: 0 0 80px; font-size: .85rem; font-weight: 600; color: var(--texto-suave); text-transform: uppercase; letter-spacing: .03em; padding-top: 2px; }
   .detalle-fila .valor { flex: 1; font-size: .95rem; word-break: break-word; }
+  .logo-plataforma { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; vertical-align: middle; margin-right: 8px; background: #fff; padding: 4px; }
   .estrella { color: #facc15; font-size: 1.05rem; display: inline-block; }
   .tarjeta .meta .estrella { vertical-align: middle; }
   .detalle-fila .valor .estrella { vertical-align: middle; }

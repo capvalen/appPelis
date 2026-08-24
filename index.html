@@ -74,6 +74,12 @@
         </div>
       </div>
       <div class="campo">
+        <label for="fPlataforma"><i class="ti ti-device-tv"></i> Plataforma</label>
+        <select id="fPlataforma">
+          <option value="">Sin plataforma</option>
+        </select>
+      </div>
+      <div class="campo">
         <input type="hidden" id="fPoster">
         <button type="button" class="btn-secundario" id="btnEliminarPoster"><i class="ti ti-trash"></i> Eliminar poster</button>
       </div>
@@ -126,6 +132,7 @@
     </div>
     <div class="sub" id="dVisto"></div>
     <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
+    <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="etiqueta">Plataforma</span><span class="valor" id="dPlataforma"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
     <div class="modal-acciones">
@@ -166,6 +173,7 @@
 
 <script type="module">
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
+  const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
 
   const TMDB_TOKEN = import.meta.env.VITE_API_TMDB || '';
 
@@ -184,6 +192,8 @@
   const $btnCopiar = document.getElementById('btnCopiar');
   const $dVisto = document.getElementById('dVisto');
   const $dDato = document.getElementById('dDato');
+  const $dPlataformaFila = document.getElementById('dPlataformaFila');
+  const $dPlataforma = document.getElementById('dPlataforma');
   const $dNota = document.getElementById('dNota');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
@@ -197,6 +207,7 @@
   const $carruselWrap = document.getElementById('carruselWrap');
 
   let peliculas = [];
+  let plataformas = [];
   let filtro = '';
   let filtroVisto = '';
   let filtroClase = '';
@@ -220,6 +231,25 @@
   function capitalizar(s) {
     if (!s) return s;
     return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  function nombrePlataforma(p) {
+    return p.plataforma.split(' ').map(capitalizar).join(' ');
+  }
+
+  async function cargarPlataformas() {
+    const res = await fetch(BASE_PLATAFORMAS + '?perPage=200');
+    if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
+    const data = await res.json();
+    plataformas = data.items || [];
+    const $sel = document.getElementById('fPlataforma');
+    $sel.innerHTML = '<option value="">Sin plataforma</option>';
+    for (const p of plataformas) {
+      const op = document.createElement('option');
+      op.value = p.id;
+      op.textContent = nombrePlataforma(p);
+      $sel.appendChild(op);
+    }
   }
 
   async function api(path = '', options = {}) {
@@ -261,6 +291,7 @@
         $carruselWrap.style.display = 'none';
         return;
       }
+			
       $carruselWrap.style.display = '';
       for (const p of data.items) {
         const div = document.createElement('div');
@@ -458,6 +489,15 @@
     $dPelicula.textContent = tituloConAnio(p);
     $dVisto.innerHTML = badge(p.visto) + badgeClase(p.clase);
     $dDato.textContent = p.dato ? p.dato : '—';
+    const plat = plataformas.find(x => String(x.id) === String(p.plataforma));
+    if (plat && plat.logo) {
+      $dPlataforma.innerHTML = '<img class="logo-plataforma" src="/logos/' + plat.logo + '" alt="' + nombrePlataforma(plat) + '">' +
+        '<span>' + nombrePlataforma(plat) + '</span>';
+      $dPlataformaFila.style.display = '';
+    } else {
+      $dPlataforma.innerHTML = '';
+      $dPlataformaFila.style.display = 'none';
+    }
     $dNota.innerHTML = p.nota
       ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
       : '—';
@@ -556,6 +596,7 @@
     $formulario.fPoster.value = '';
     $formulario.fClase.value = 'película';
     $formulario.fVisto.value = 'Falta ver';
+    $formulario.fPlataforma.value = '';
     $formulario.fRecomendable.checked = false;
     document.getElementById('btnEliminarPoster').style.display = 'none';
     actualizarLabelPelicula();
@@ -572,6 +613,7 @@
     $formulario.fPoster.value = p.poster || '';
     $formulario.fClase.value = (p.clase || 'película').toLowerCase() === 'serie' ? 'serie' : 'película';
     $formulario.fVisto.value = p.visto;
+    $formulario.fPlataforma.value = p.plataforma || '';
     $formulario.fDato.value = p.dato || '';
     $formulario.fNota.value = p.nota || '';
     $formulario.fAnio.value = p.anio || '';
@@ -666,6 +708,7 @@
       pelicula: $formulario.fPelicula.value.trim(),
       poster: $formulario.fPoster.value.trim(),
       clase: $formulario.fClase.value,
+      plataforma: $formulario.fPlataforma.value,
       visto: $formulario.fVisto.value,
       dato: $formulario.fDato.value.trim(),
       nota: $formulario.fNota.value.trim(),
@@ -904,6 +947,8 @@
   $formulario.addEventListener('submit', guardar);
 
   construirFiltros();
+
+  cargarPlataformas().catch(err => console.error('Error cargando plataformas', err));
 
   cargar().catch(err => {
     $lista.innerHTML = '';

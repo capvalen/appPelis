@@ -108,6 +108,7 @@
         <label for="fVisto"><i class="ti ti-eye"></i> Estado</label>
         <select id="fVisto">
           <option>Pendiente</option>
+          <option>Jugando</option>
           <option>Jugado</option>
           <option>Volver a jugar</option>
         </select>
@@ -360,6 +361,7 @@
 
   function badge(visto) {
     const cls = visto === 'Jugado' ? 'Jugado'
+      : visto === 'Jugando' ? 'Jugando'
       : visto === 'Volver a jugar' ? 'Volver'
       : 'Pendiente';
     return '<span class="badge ' + cls + '">' + (visto || 'Pendiente') + '</span>';
@@ -771,7 +773,7 @@
     }
   }
 
-  const ESTADOS = ['Pendiente', 'Jugado', 'Volver a jugar'];
+  const ESTADOS = ['Pendiente', 'Jugando', 'Jugado', 'Volver a jugar'];
   // 0 = sin orden, 1 = A-Z, 2 = Z-A
   let ordenAZ = 0;
 
