@@ -9,6 +9,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/style.css">
 <style>
+  html, body { overflow-x: hidden; }
   .contenedor {
     max-width: 900px;
     margin: 32px auto 48px;
@@ -97,6 +98,20 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
   }
+  @media (max-width: 640px) {
+    .grid-etiquetas {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .toolbar, .contador-directorio, .titulo-mapa, .mapa-volver, .grid-etiquetas {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .mapa-cuadritos {
+      margin-left: 16px;
+      margin-right: 16px;
+    }
+  }
   .tarjeta-etiqueta {
     border: 1px solid var(--borde);
     background: var(--superficie);
@@ -105,13 +120,22 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
   }
   .tarjeta-etiqueta.destacada {
     border-color: #f5b301;
     border-width: 2px;
   }
-  .tarjeta-etiqueta .nombre { flex: 1; font-weight: 600; font-size: .92rem; }
+  .tarjeta-etiqueta .nombre {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-weight: 600;
+    font-size: .92rem;
+  }
   .tarjeta-etiqueta .uso {
+    flex-shrink: 0;
     font-size: .78rem;
     color: var(--texto-suave);
     background: var(--morado-mas-claro);
