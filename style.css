@@ -106,12 +106,22 @@
     border-radius: 12px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
     padding: 6px;
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 2px;
     z-index: 60;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity .18s ease, visibility .18s ease, transform .18s ease;
+    pointer-events: none;
   }
-  .menu-panel.abierto { display: flex; }
+  .menu-panel.abierto {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
   .menu-panel a {
     display: flex;
     align-items: center;
@@ -151,7 +161,7 @@
   .carrusel-btn {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-20%);
     z-index: 5;
     width: 40px;
     height: 40px;
@@ -828,7 +838,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--morado);
+    background: var(--morado-suave);
     color: #fff;
     box-shadow: 0 6px 18px rgba(150, 91, 239, .4);
     font-size: 1.6rem;
@@ -837,4 +847,6 @@
     justify-content: center;
     z-index: 40;
   }
-  #btnAleatorio:hover { background: var(--morado-suave); }
+  #btnAleatorio:hover { background: var(--morado); }
+#btnAleatorio:active { transform: none; }
+#btnAleatorio { -webkit-tap-highlight-color: transparent; }

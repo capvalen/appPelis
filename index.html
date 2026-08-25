@@ -1077,11 +1077,6 @@
     }, 250);
   };
   $buscarEtiqueta.addEventListener('input', buscarEtiquetaDebounce);
-  $buscarEtiqueta.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    clearTimeout(buscarEtiquetaDebounce._t);
-    renderEtiquetasResultados();
-  });
   document.getElementById('btnMenu').onclick = (e) => {
     e.stopPropagation();
     document.getElementById('menuPanel').classList.toggle('abierto');
