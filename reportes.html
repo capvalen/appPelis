@@ -376,7 +376,22 @@
         if (e && !usadas.has(id)) usadas.set(id, e);
       }
     }
-    const lista = Array.from(usadas.values()).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'));
+    const lista = Array.from(usadas.values()).sort((a, b) => {
+      const aStr = a.etiqueta;
+      const bStr = b.etiqueta;
+      const aIsNum = /^[0-9]/.test(aStr);
+      const bIsNum = /^[0-9]/.test(bStr);
+      const aIsLetter = /^[a-záéíóúñ]/i.test(aStr);
+      const bIsLetter = /^[a-záéíóúñ]/i.test(bStr);
+      // Números primero
+      if (aIsNum && !bIsNum) return -1;
+      if (!aIsNum && bIsNum) return 1;
+      // Luego letras
+      if (aIsLetter && !bIsLetter) return -1;
+      if (!aIsLetter && bIsLetter) return 1;
+      // Al final símbolos, ordenados entre sí
+      return aStr.localeCompare(bStr, 'es');
+    });
     const limite = etiquetasExpandido ? lista.length : Math.min(6, lista.length);
     const aMostrar = lista.slice(0, limite);
     for (const e of aMostrar) {

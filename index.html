@@ -528,12 +528,30 @@
 
   function render() {
     const q = normalizar(filtro);
-    const visibles = peliculas.filter(p => {
-      if (filtroVisto && p.visto !== filtroVisto) return false;
-      if (filtroClase && (p.clase || 'película') !== filtroClase) return false;
-      if (!q) return true;
-      return normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q);
-    });
+    // Construir lista de visibles con info de match por etiqueta
+    const visiblesInfo = [];
+    let porEtiqueta = 0;
+    for (const p of peliculas) {
+      if (filtroVisto && p.visto !== filtroVisto) continue;
+      if (filtroClase && (p.clase || 'película') !== filtroClase) continue;
+      if (!q) { visiblesInfo.push({ p, tagMatch: null }); continue; }
+      // buscar en título y dato
+      if (normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q)) {
+        visiblesInfo.push({ p, tagMatch: null });
+        continue;
+      }
+      // buscar en etiquetas expandidas
+      const etiquetasExpandidas = (p.expand && Array.isArray(p.expand.etiquetas)) ? p.expand.etiquetas : [];
+      let foundTag = null;
+      for (const e of etiquetasExpandidas) {
+        if (normalizar(e.etiqueta || '').includes(q)) { foundTag = e.etiqueta; break; }
+      }
+      if (foundTag) {
+        visiblesInfo.push({ p, tagMatch: foundTag });
+        porEtiqueta++;
+      }
+    }
+    const visibles = visiblesInfo.map(v => v.p);
     let texto;
     if (filtroClase === 'película') {
       texto = visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
@@ -541,6 +559,9 @@
       texto = visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
     } else {
       texto = visibles.length + ' películas y series';
+    }
+    if (q && porEtiqueta > 0) {
+      texto += ' (' + porEtiqueta + ' por etiqueta)';
     }
     $contador.textContent = texto;
     $lista.classList.toggle('modo-portada', modoVista === 'portada');
@@ -560,10 +581,10 @@
       return;
     }
     if (ordenAZ) {
-      visibles.sort((a, b) => a.pelicula.localeCompare(b.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
+      visiblesInfo.sort((a, b) => a.p.pelicula.localeCompare(b.p.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
     }
-    const aMostrar = visibles.slice(0, visiblesMostrados);
-    for (const p of aMostrar) $lista.appendChild(tarjeta(p));
+    const aMostrar = visiblesInfo.slice(0, visiblesMostrados);
+    for (const vi of aMostrar) $lista.appendChild(tarjeta(vi.p));
     if (visibles.length > visiblesMostrados) {
       const c = document.createElement('div');
       c.className = 'cargando';
@@ -848,7 +869,7 @@
   async function guardar(e) {
     e.preventDefault();
     const body = {
-      pelicula: $formulario.fPelicula.value.trim(),
+      pelicula: capitalizar($formulario.fPelicula.value.trim()),
       poster: $formulario.fPoster.value.trim(),
       clase: $formulario.fClase.value,
       plataforma: $formulario.fPlataforma.value,
