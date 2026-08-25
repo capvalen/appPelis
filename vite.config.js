@@ -9,7 +9,8 @@ export default defineConfig({
         main: 'index.html',
         juegos: 'juegos.html',
         config: 'config.html',
-        reportes: 'reportes.html'
+        reportes: 'reportes.html',
+        etiquetas: 'etiquetas.html'
       }
     }
   }

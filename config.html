@@ -15,7 +15,21 @@
     --morado: #a78bfa;
   }
   /* enlace volver (es un <a>, no un botón de modal) */
-  .btn-volver { color: #6152ff; text-decoration: none; }
+  .btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .95rem;
+    color: #6152ff;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    transition: background .15s, border-color .15s;
+  }
+  .btn-volver:hover { background: var(--superficie-2); border-color: var(--morado); }
   /* layout */
   .contenedor {
     max-width: 640px;
@@ -120,13 +134,21 @@
       <button type="button" class="opcion-vista" id="vistaPortada"><i class="ti ti-photo"></i> Modo portada</button>
     </div>
   </div>
+
+  <div class="tarjeta">
+    <div class="info">
+      <div class="titulo"><i class="ti ti-tags"></i> Directorio de etiquetas</div>
+      <div class="descripcion">Consulta todas las etiquetas disponibles y cuántas veces se usan.</div>
+    </div>
+    <a class="btn-primario" href="/etiquetas.html" style="text-decoration:none; padding:10px 18px; border-radius:10px; display:inline-flex; align-items:center; gap:6px; font-weight:600;"><i class="ti ti-arrow-right"></i> Ir</a>
+  </div>
 </div>
 
 <footer class="credito">
   <div>Aplicativo creado por Carlos Pariona V.</div>
   <div>Página web <a href="https://infocatsoluciones.com" target="_blank" rel="noopener noreferrer">https://infocatsoluciones.com</a></div>
   <div>Correo de contacto <a href="mailto:servidor@infocatsoluciones.com">servidor@infocatsoluciones.com</a></div>
-  <div>Versión: 1.06</div>
+  <div>Versión: 1.07</div>
 </footer>
 
 <script>
