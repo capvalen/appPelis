@@ -57,7 +57,7 @@
     transform: translateX(-50%);
     font-size: 1.35rem;
     font-weight: 700;
-    color: var(--morado);
+    color: #8f86f4;
     text-align: center;
     white-space: nowrap;
   }
@@ -337,6 +337,14 @@
     transition: background .15s, color .15s, border-color .15s;
   }
   .chip:hover { border-color: var(--morado); color: var(--morado); }
+  .chip i.ti-thumb-up { animation: pulseLike 4s ease infinite; display: inline-block; }
+  @keyframes pulseLike {
+    0% { transform: scale(1) rotate(0deg); }
+    12.5% { transform: scale(1.3) rotate(-15deg); }
+    25% { transform: scale(1) rotate(0deg); }
+    37.5% { transform: scale(1.3) rotate(-15deg); }
+    50%, 100% { transform: scale(1) rotate(0deg); }
+  }
   .chip.activo {
     background: var(--morado);
     border-color: var(--morado);
@@ -610,6 +618,12 @@
   .modal-detalle .titulo { font-size: 1.2rem; font-weight: 700; color: var(--morado-oscuro); margin-bottom: 6px; }
   .modal-detalle .titulo-fila { display: flex; align-items: flex-start; gap: 8px; }
   .modal-detalle .titulo-fila .titulo { flex: 1; margin-bottom: 6px; }
+  .modal-detalle .titulo-centrado { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+  .modal-detalle .titulo-centrado .titulo { text-align: center; margin-bottom: 0; }
+  .modal-detalle .etiquetas-detalle { text-align: center; color: var(--texto-suave); font-size: .9rem; margin-bottom: 12px; }
+  .modal-detalle .estado-centrado { text-align: center; margin-bottom: 12px; }
+  .modal-detalle .recomendada-centrado { text-align: center; margin: 12px 0; }
+  .modal-detalle .etiquetas-detalle .separador { font-weight: 700; color: var(--texto); }
   .btn-copiar {
     background: var(--superficie-suave);
     color: var(--texto-suave);
@@ -767,8 +781,16 @@
     visibility: visible;
   }
   .estrella { color: #facc15; font-size: 1.05rem; display: inline-block; }
+  .estrella.llena { animation: bounce 4s ease infinite; }
   .tarjeta .meta .estrella { vertical-align: middle; }
   .detalle-fila .valor .estrella { vertical-align: middle; }
+  @keyframes bounce {
+    0%, 20% { transform: scale(1); }
+    5% { transform: scale(1.5); }
+    10% { transform: scale(0.85); }
+    15% { transform: scale(1.3); }
+    25%, 100% { transform: scale(1); }
+  }
   /* etiqueta de recomendación (like) en el detalle */
   .btn-recomendar {
     display: inline-flex;

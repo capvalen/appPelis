@@ -83,7 +83,10 @@
         <label for="fEtiquetas"><i class="ti ti-tags"></i> Etiquetas</label>
         <div id="etiquetasBotones" class="etiquetas-botones"></div>
         <input type="hidden" id="fEtiquetas">
-        <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta...">
+        <div class="buscar-wrap">
+          <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta...">
+          <button class="btn-limpiar" id="btnLimpiarEtiqueta" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
+        </div>
         <div id="etiquetasResultados" class="etiquetas-resultados"></div>
       </div>
       <div class="campo">
@@ -133,16 +136,16 @@
     <div id="dPoster">
       <button type="button" class="btn-buscar-portada" id="btnBuscarPortada"><i class="ti ti-photo-search"></i> Buscar portada</button>
     </div>
-    <div class="titulo-fila">
+    <div class="titulo-centrado">
       <div class="titulo" id="dPelicula"></div>
       <button type="button" class="btn-copiar" id="btnCopiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>
     </div>
-    <div class="sub" id="dVisto"></div>
+    <div class="estado-centrado" id="dVisto"></div>
+    <div class="etiquetas-detalle" id="dEtiquetasDetalle"></div>
     <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
-    <div class="detalle-fila" id="dEtiquetasFila" style="display:none"><span class="etiqueta">Etiquetas</span><span class="valor" id="dEtiquetas"></span></div>
-    <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
+    <div class="recomendada-centrado" id="dRecomendableFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></div>
     <div class="modal-acciones">
       <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
       <button type="button" class="btn-primario" id="btnEditarDesdeDetalle"><i class="ti ti-pencil"></i> Editar</button>
@@ -203,8 +206,7 @@
   const $dDato = document.getElementById('dDato');
   const $dPlataformaFila = document.getElementById('dPlataformaFila');
   const $dPlataforma = document.getElementById('dPlataforma');
-  const $dEtiquetasFila = document.getElementById('dEtiquetasFila');
-  const $dEtiquetas = document.getElementById('dEtiquetas');
+  const $dEtiquetasDetalle = document.getElementById('dEtiquetasDetalle');
   const $dNota = document.getElementById('dNota');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
@@ -227,6 +229,7 @@
   let filtro = '';
   let filtroVisto = '';
   let filtroClase = '';
+  let filtroRecomendado = '';
   let modo = 'crear';
   let idEditando = null;
   let detalleActual = null;
@@ -250,7 +253,10 @@
   }
 
   function iconoNota(nota) {
-    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+    const n = Number(nota);
+    if (n >= 4) return 'ti ti-star-filled llena';
+    if (n >= 3) return 'ti ti-star';
+    return 'ti ti-star-half';
   }
 
   function dadoSrc(cara) {
@@ -466,7 +472,10 @@
       : visto === 'Ver otra vez' ? 'Ver'
       : visto === 'Viendo' ? 'Viendo'
       : 'Urgente';
-    return '<span class="badge ' + cls + '">' + visto + '</span>';
+    let icono = '';
+    if (visto === 'Falta ver') icono = '<i class="ti ti-circle-plus-2"></i> ';
+    else if (visto === 'Visto' || visto === 'Ver otra vez' || visto === 'Viendo') icono = '<i class="ti ti-checks"></i> ';
+    return '<span class="badge ' + cls + '">' + icono + visto + '</span>';
   }
 
   function badgeClase(clase) {
@@ -534,6 +543,7 @@
     for (const p of peliculas) {
       if (filtroVisto && p.visto !== filtroVisto) continue;
       if (filtroClase && (p.clase || 'película') !== filtroClase) continue;
+      if (filtroRecomendado === 'si' && !p.recomendable) continue;
       if (!q) { visiblesInfo.push({ p, tagMatch: null }); continue; }
       // buscar en título y dato
       if (normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q)) {
@@ -620,7 +630,7 @@
   function abrirDetalle(p) {
     detalleActual = p;
     $dPelicula.textContent = tituloConAnio(p);
-    $dVisto.innerHTML = badge(p.visto) + badgeClase(p.clase);
+    $dVisto.innerHTML = badgeClase(p.clase) + badge(p.visto);
     $dDato.textContent = p.dato ? p.dato : '—';
     const plat = plataformas.find(x => String(x.id) === String(p.plataforma));
     if (plat && plat.logo) {
@@ -643,11 +653,11 @@
         const e = etiquetas.find(x => x.id === id);
         return e ? e.etiqueta : id;
       });
-      $dEtiquetas.innerHTML = nombres.map(n => '<span class="badge etiqueta-badge">' + n + '</span>').join('');
-      $dEtiquetasFila.style.display = '';
+      $dEtiquetasDetalle.innerHTML = nombres.map(n => '<span>' + n + '</span>').join('<span class="separador"> · </span>');
+      $dEtiquetasDetalle.style.display = '';
     } else {
-      $dEtiquetas.innerHTML = '';
-      $dEtiquetasFila.style.display = 'none';
+      $dEtiquetasDetalle.textContent = '';
+      $dEtiquetasDetalle.style.display = 'none';
     }
     $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
     mostrarPoster(p.poster);
@@ -833,7 +843,7 @@
   function abrirSelectorPoster(results, registro) {
     posterRegistro = registro;
     $posterGrid.innerHTML = '';
-    const primeros = results.slice(0, 6);
+    const primeros = results.slice(0, 12);
     const conPoster = primeros.filter(r => r.poster_path);
     if (!conPoster.length) {
       const v = document.createElement('div');
@@ -981,6 +991,17 @@
       render();
     };
     filaEstado.appendChild(chipOrden);
+    // chip de recomendados
+    const chipReco = document.createElement('button');
+    chipReco.className = 'chip' + (filtroRecomendado ? ' activo' : '');
+    chipReco.innerHTML = '<i class="ti ti-thumb-up"></i> Mis recomendaciones';
+    chipReco.onclick = () => {
+      filtroRecomendado = filtroRecomendado ? '' : 'si';
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    filaEstado.appendChild(chipReco);
     $filtros.appendChild(filaEstado);
 
     const filaClase = document.createElement('div');
@@ -1098,6 +1119,14 @@
     }, 250);
   };
   $buscarEtiqueta.addEventListener('input', buscarEtiquetaDebounce);
+  document.getElementById('btnLimpiarEtiqueta').onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    $buscarEtiqueta.value = '';
+    clearTimeout(buscarEtiquetaDebounce._t);
+    $etiquetasResultados.innerHTML = '';
+    $buscarEtiqueta.focus();
+  };
   document.getElementById('btnMenu').onclick = (e) => {
     e.stopPropagation();
     document.getElementById('menuPanel').classList.toggle('abierto');

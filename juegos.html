@@ -240,6 +240,7 @@
   let peliculas = [];
   let filtro = '';
   let filtroVisto = '';
+  let filtroRecomendado = '';
   let modo = 'crear';
   let idEditando = null;
   let detalleActual = null;
@@ -264,7 +265,10 @@
   }
 
   function iconoNota(nota) {
-    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+    const n = Number(nota);
+    if (n >= 4) return 'ti ti-star-filled llena';
+    if (n >= 3) return 'ti ti-star';
+    return 'ti ti-star-half';
   }
 
   function dadoSrc(cara) {
@@ -373,7 +377,10 @@
       : visto === 'Jugando' ? 'Jugando'
       : visto === 'Volver a jugar' ? 'Volver'
       : 'Pendiente';
-    return '<span class="badge ' + cls + '">' + (visto || 'Pendiente') + '</span>';
+    let icono = '';
+    if (!visto || visto === 'Pendiente') icono = '<i class="ti ti-circle-plus-2"></i> ';
+    else if (visto === 'Jugado' || visto === 'Jugando' || visto === 'Volver a jugar') icono = '<i class="ti ti-checks"></i> ';
+    return '<span class="badge ' + cls + '">' + icono + (visto || 'Pendiente') + '</span>';
   }
 
   function badgeClase(clase) {
@@ -443,6 +450,7 @@
     const q = normalizar(filtro);
     const visibles = peliculas.filter(p => {
       if (filtroVisto && p.visto !== filtroVisto) return false;
+      if (filtroRecomendado === 'si' && !p.recomendable) return false;
       if (!q) return true;
       return normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q);
     });
@@ -504,7 +512,7 @@
   function abrirDetalle(p) {
     detalleActual = p;
     $dPelicula.textContent = tituloConAnio(p);
-    $dVisto.innerHTML = badge(p.visto) + badgeClase(p.clase);
+    $dVisto.innerHTML = badgeClase(p.clase) + badge(p.visto);
     $dDato.textContent = p.dato ? p.dato : '—';
     $dUbicacion.textContent = p.ubicacion ? p.ubicacion : '—';
     $dNota.innerHTML = p.nota
@@ -830,6 +838,17 @@
       render();
     };
     filaEstado.appendChild(chipOrden);
+    // chip de recomendados
+    const chipReco = document.createElement('button');
+    chipReco.className = 'chip' + (filtroRecomendado ? ' activo' : '');
+    chipReco.innerHTML = '<i class="ti ti-thumb-up"></i> Mis recomendaciones';
+    chipReco.onclick = () => {
+      filtroRecomendado = filtroRecomendado ? '' : 'si';
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    filaEstado.appendChild(chipReco);
     $filtros.appendChild(filaEstado);
   }
 

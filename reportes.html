@@ -212,7 +212,10 @@
   }
 
   function iconoNota(nota) {
-    return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+    const n = Number(nota);
+    if (n >= 4) return 'ti ti-star-filled llena';
+    if (n >= 3) return 'ti ti-star';
+    return 'ti ti-star-half';
   }
 
   function badge(visto, clase) {
@@ -222,14 +225,20 @@
         : visto === 'Jugando' ? 'Jugando'
         : visto === 'Volver a jugar' ? 'Volver'
         : 'Pendiente';
-      return '<span class="badge ' + cls + '">' + (visto || 'Pendiente') + '</span>';
+      let icono = '';
+      if (!visto || visto === 'Pendiente') icono = '<i class="ti ti-circle-plus-2"></i> ';
+      else if (visto === 'Jugado' || visto === 'Jugando' || visto === 'Volver a jugar') icono = '<i class="ti ti-checks"></i> ';
+      return '<span class="badge ' + cls + '">' + icono + (visto || 'Pendiente') + '</span>';
     }
     const cls = visto === 'Visto' ? 'Visto'
       : visto === 'Falta ver' ? 'Falta'
       : visto === 'Ver otra vez' ? 'Ver'
       : visto === 'Viendo' ? 'Viendo'
       : 'Urgente';
-    return '<span class="badge ' + cls + '">' + visto + '</span>';
+    let icono = '';
+    if (visto === 'Falta ver') icono = '<i class="ti ti-circle-plus-2"></i> ';
+    else if (visto === 'Visto' || visto === 'Ver otra vez' || visto === 'Viendo') icono = '<i class="ti ti-checks"></i> ';
+    return '<span class="badge ' + cls + '">' + icono + visto + '</span>';
   }
 
   function badgeClase(clase) {
