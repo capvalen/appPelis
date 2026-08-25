@@ -81,6 +81,13 @@
         </select>
       </div>
       <div class="campo">
+        <label for="fEtiquetas"><i class="ti ti-tags"></i> Etiquetas</label>
+        <div id="etiquetasBotones" class="etiquetas-botones"></div>
+        <input type="hidden" id="fEtiquetas">
+        <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta...">
+        <div id="etiquetasResultados" class="etiquetas-resultados"></div>
+      </div>
+      <div class="campo">
         <input type="hidden" id="fPoster">
         <button type="button" class="btn-secundario" id="btnEliminarPoster"><i class="ti ti-trash"></i> Eliminar poster</button>
       </div>
@@ -135,6 +142,7 @@
     <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
+    <div class="detalle-fila" id="dEtiquetasFila" style="display:none"><span class="etiqueta">Etiquetas</span><span class="valor" id="dEtiquetas"></span></div>
     <div class="detalle-fila" id="dRecomendableFila" style="display:none"><span class="etiqueta">Recomendada</span><span class="valor"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></span></div>
     <div class="modal-acciones">
       <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
@@ -152,7 +160,7 @@
     </div>
     <div class="alea-resultado" id="aleaResultado"></div>
     <div class="modal-acciones">
-      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver</button>
+      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver detalles</button>
     </div>
   </div>
 </div>
@@ -175,6 +183,7 @@
 <script type="module">
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
   const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
+  const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
 
   const TMDB_TOKEN = import.meta.env.VITE_API_TMDB || '';
 
@@ -195,6 +204,8 @@
   const $dDato = document.getElementById('dDato');
   const $dPlataformaFila = document.getElementById('dPlataformaFila');
   const $dPlataforma = document.getElementById('dPlataforma');
+  const $dEtiquetasFila = document.getElementById('dEtiquetasFila');
+  const $dEtiquetas = document.getElementById('dEtiquetas');
   const $dNota = document.getElementById('dNota');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
@@ -206,9 +217,14 @@
   const $posterGrid = document.getElementById('posterGrid');
   const $carrusel = document.getElementById('carrusel');
   const $carruselWrap = document.getElementById('carruselWrap');
+  const $etiquetasBotones = document.getElementById('etiquetasBotones');
+  const $buscarEtiqueta = document.getElementById('buscarEtiqueta');
+  const $etiquetasResultados = document.getElementById('etiquetasResultados');
 
   let peliculas = [];
   let plataformas = [];
+  let etiquetas = [];
+  let etiquetasSeleccionadas = [];
   let filtro = '';
   let filtroVisto = '';
   let filtroClase = '';
@@ -238,6 +254,11 @@
     return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
   }
 
+  function dadoSrc(cara) {
+    const oscuro = document.documentElement.classList.contains('tema-oscuro');
+    return oscuro ? '/assets/dice_' + cara + '_blanco.png' : '/assets/dice_' + cara + '.png';
+  }
+
   function nombrePlataforma(p) {
     return p.plataforma.split(' ').map(capitalizar).join(' ');
   }
@@ -255,6 +276,100 @@
       op.textContent = nombrePlataforma(p);
       $sel.appendChild(op);
     }
+  }
+
+  const ETIQUETAS_INICIALES = [
+    { id: 'r155db6d7ee3325', etiqueta: 'Acción' },
+    { id: 'rce032e27c05934', etiqueta: 'Comedia' },
+    { id: 'r269e514b3dbd97', etiqueta: 'Drama' },
+    { id: 'r31957a1bdecd8a', etiqueta: 'Romance' },
+    { id: 'r71d39f65338ae0', etiqueta: 'Suspenso' },
+    { id: 'raa6f9b3c520f73', etiqueta: 'Terror' },
+    { id: 'r5fc85d37ea4dbe', etiqueta: 'Ciencia ficción' },
+    { id: 'r42d42a784208a3', etiqueta: 'Fantasía' },
+    { id: 'r61730636663d7f', etiqueta: 'Documental' },
+    { id: 'rbc311f12c2ea17', etiqueta: 'Animación' },
+    { id: 'r299a6f8a3ce219', etiqueta: 'Aventura' },
+    { id: 'rbae84157ae17a8', etiqueta: 'Clásico' },
+    { id: 're61a29abceac78', etiqueta: 'Estreno' },
+    { id: 'r1f91502e3a16fc', etiqueta: 'Oscar' },
+    { id: 'rcbab36bd777a2d', etiqueta: 'Familiar' }
+  ];
+
+  async function cargarEtiquetas() {
+    // carga el catálogo completo (paginado) para resolver nombres y búsquedas
+    let page = 1;
+    let items = [];
+    try {
+      while (true) {
+        const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
+        if (!res.ok) break;
+        const data = await res.json();
+        items = items.concat(data.items || []);
+        if (page >= data.totalPages) break;
+        page++;
+      }
+      etiquetas = items;
+    } catch (_) {}
+    renderEtiquetasBotones();
+  }
+
+  function renderEtiquetasBotones() {
+    $etiquetasBotones.innerHTML = '';
+    // las seleccionadas que no estén en la lista base se agregan al final para poder desactivarlas
+    const extras = etiquetasSeleccionadas
+      .map(id => etiquetas.find(e => e.id === id))
+      .filter(Boolean);
+    const todas = ETIQUETAS_INICIALES.concat(
+      extras.filter(e => !ETIQUETAS_INICIALES.some(x => x.id === e.id))
+    );
+    for (const e of todas) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'etiqueta-btn' + (etiquetasSeleccionadas.includes(e.id) ? ' activa' : '');
+      btn.textContent = e.etiqueta;
+      btn.onclick = () => {
+        const idx = etiquetasSeleccionadas.indexOf(e.id);
+        if (idx >= 0) {
+          etiquetasSeleccionadas.splice(idx, 1);
+        } else {
+          etiquetasSeleccionadas.push(e.id);
+        }
+        $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
+        renderEtiquetasBotones();
+        renderEtiquetasResultados();
+      };
+      $etiquetasBotones.appendChild(btn);
+    }
+  }
+
+  async function renderEtiquetasResultados() {
+    const q = normalizar($buscarEtiqueta.value.trim());
+    $etiquetasResultados.innerHTML = '';
+    if (!q) return;
+    const candidatas = etiquetas.filter(e =>
+      !etiquetasSeleccionadas.includes(e.id) &&
+      normalizar(e.etiqueta).includes(q)
+    );
+    for (const e of candidatas.slice(0, 6)) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = e.etiqueta;
+      btn.onclick = () => {
+        etiquetasSeleccionadas.push(e.id);
+        if (!etiquetas.some(x => x.id === e.id)) etiquetas.push(e);
+        $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
+        $buscarEtiqueta.value = '';
+        $etiquetasResultados.innerHTML = '';
+        renderEtiquetasBotones();
+      };
+      $etiquetasResultados.appendChild(btn);
+    }
+  }
+
+  function buscarEtiquetaDebounce() {
+    clearTimeout(buscarEtiquetaDebounce._t);
+    buscarEtiquetaDebounce._t = setTimeout(renderEtiquetasResultados, 300);
   }
 
   async function api(path = '', options = {}) {
@@ -506,6 +621,18 @@
     $dNota.innerHTML = p.nota
       ? '<i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota
       : '—';
+    const idsEtiquetas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
+    if (idsEtiquetas.length) {
+      const nombres = idsEtiquetas.map(id => {
+        const e = etiquetas.find(x => x.id === id);
+        return e ? e.etiqueta : id;
+      });
+      $dEtiquetas.innerHTML = nombres.map(n => '<span class="badge etiqueta-badge">' + n + '</span>').join('');
+      $dEtiquetasFila.style.display = '';
+    } else {
+      $dEtiquetas.innerHTML = '';
+      $dEtiquetasFila.style.display = 'none';
+    }
     $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
     mostrarPoster(p.poster);
     abrirOverlay($overlayDetalle);
@@ -551,10 +678,10 @@
     // efecto de dados: alterna dice_1 / dice_2 en bucle mientras "sortean"
     clearInterval(aleaIntervalo);
     aleaCara = 1;
-    $aleaDado.src = '/assets/dice_1.png';
+    $aleaDado.src = dadoSrc(1);
     aleaIntervalo = setInterval(() => {
       aleaCara = aleaCara === 1 ? 2 : 1;
-      $aleaDado.src = '/assets/dice_' + aleaCara + '.png';
+      $aleaDado.src = dadoSrc(aleaCara);
     }, 250);
     // efecto de búsqueda por 1 segundo, luego elige al azar
     setTimeout(() => {
@@ -603,6 +730,11 @@
     $formulario.fVisto.value = 'Falta ver';
     $formulario.fPlataforma.value = '';
     $formulario.fRecomendable.checked = false;
+    etiquetasSeleccionadas = [];
+    $formulario.fEtiquetas.value = '';
+    $buscarEtiqueta.value = '';
+    $etiquetasResultados.innerHTML = '';
+    renderEtiquetasBotones();
     document.getElementById('btnEliminarPoster').style.display = 'none';
     actualizarLabelPelicula();
     $modalTitulo.textContent = 'Agregar película';
@@ -623,6 +755,11 @@
     $formulario.fNota.value = p.nota || '';
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
+    etiquetasSeleccionadas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
+    $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
+    $buscarEtiqueta.value = '';
+    $etiquetasResultados.innerHTML = '';
+    renderEtiquetasBotones();
     document.getElementById('btnEliminarPoster').style.display = '';
     actualizarLabelPelicula();
     $modalTitulo.textContent = 'Editar película';
@@ -714,6 +851,7 @@
       poster: $formulario.fPoster.value.trim(),
       clase: $formulario.fClase.value,
       plataforma: $formulario.fPlataforma.value,
+      etiquetas: etiquetasSeleccionadas,
       visto: $formulario.fVisto.value,
       dato: $formulario.fDato.value.trim(),
       nota: $formulario.fNota.value.trim(),
@@ -937,6 +1075,12 @@
       if (detalleActual) abrirEditar(detalleActual);
     }, 250);
   };
+  $buscarEtiqueta.addEventListener('input', buscarEtiquetaDebounce);
+  $buscarEtiqueta.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    clearTimeout(buscarEtiquetaDebounce._t);
+    renderEtiquetasResultados();
+  });
   document.getElementById('btnMenu').onclick = (e) => {
     e.stopPropagation();
     document.getElementById('menuPanel').classList.toggle('abierto');
@@ -962,6 +1106,7 @@
   construirFiltros();
 
   cargarPlataformas().catch(err => console.error('Error cargando plataformas', err));
+  cargarEtiquetas().catch(err => console.error('Error cargando etiquetas', err));
 
   cargar().catch(err => {
     $lista.innerHTML = '';

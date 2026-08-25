@@ -24,7 +24,16 @@
       "Shell(deno check main.ts 2 >& 1)",
       "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_plataformas/records?perPage=20)",
       "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_peliculas/records?perPage=3&sort=-created)",
-      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_plataformas/records?perPage=50)"
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_plataformas/records?perPage=50)",
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records?perPage=200&sort=etiqueta)",
+      "Shell(python3 -c import sys,json; d=json.load(sys.stdin); [print(r['id'], '|', r['etiqueta']) for r in d['items']])",
+      "Shell(python3 -c  import sys,json d=json.load(sys.stdin) for r in d['items']: e=r['etiqueta'].lower() if 'reli' in e or 'relig' in e: print(repr(r['id']), '|', repr(r['etiqueta'])) )",
+      "Shell(curl -s https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records?perPage=1)",
+      "Shell(python3 -c import sys,json; d=json.load(sys.stdin); print('totalItems:', d.get('totalItems'), 'totalPages:', d.get('totalPages')))",
+      "Shell(for:*)",
+      "Shell(do:*)",
+      "Shell(python3 -c  import sys,json d=json.load(sys.stdin) for r in d['items']: if 'relig' in r['etiqueta'].lower(): print(repr(r['id']), '|', repr(r['etiqueta'])) )",
+      "Shell(done:*)"
     ],
     "deny": [],
     "defaultMode": "default"

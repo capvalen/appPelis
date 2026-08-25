@@ -168,7 +168,7 @@
     </div>
     <div class="alea-resultado" id="aleaResultado"></div>
     <div class="modal-acciones">
-      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver</button>
+      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver detalles</button>
     </div>
   </div>
 </div>
@@ -266,6 +266,11 @@
 
   function iconoNota(nota) {
     return Number(nota) < 3 ? 'ti ti-star-half' : 'ti ti-star-filled';
+  }
+
+  function dadoSrc(cara) {
+    const oscuro = document.documentElement.classList.contains('tema-oscuro');
+    return oscuro ? '/assets/dice_' + cara + '_blanco.png' : '/assets/dice_' + cara + '.png';
   }
 
   async function api(path = '', options = {}) {
@@ -557,10 +562,10 @@
     // efecto de dados: alterna dice_1 / dice_2 en bucle mientras "sortean"
     clearInterval(aleaIntervalo);
     aleaCara = 1;
-    $aleaDado.src = '/assets/dice_1.png';
+    $aleaDado.src = dadoSrc(1);
     aleaIntervalo = setInterval(() => {
       aleaCara = aleaCara === 1 ? 2 : 1;
-      $aleaDado.src = '/assets/dice_' + aleaCara + '.png';
+      $aleaDado.src = dadoSrc(aleaCara);
     }, 250);
     // efecto de búsqueda por 1 segundo, luego elige al azar
     setTimeout(() => {
@@ -571,7 +576,7 @@
       $aleaBusqueda.style.display = 'none';
       $aleaResultado.innerHTML =
         '<img class="alea-img" src="' + (elegida.poster ? elegida.poster : '/assets/playing.jpg') + '" alt="Película">' +
-        '<div class="alea-hora">Es hora de ver...</div>' +
+        '<div class="alea-hora">Es hora de jugar...</div>' +
         '<div class="alea-titulo-fila">' +
           '<div class="alea-titulo">' + tituloConAnio(elegida) + '</div>' +
           '<button type="button" class="btn-copiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>' +

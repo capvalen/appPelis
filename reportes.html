@@ -38,6 +38,8 @@
     white-space: nowrap;
   }
   .resultado-fila .nota .estrella { color: #facc15; font-size: .95rem; }
+  .etiquetas-filtro-lista { display: flex; flex-wrap: wrap; gap: 6px; }
+  .etiquetas-filtro-lista .etiqueta-btn { font-size: .78rem; padding: 4px 12px; }
 </style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
@@ -90,6 +92,13 @@
   </div>
 </div>
 
+<div class="filtros" id="filtrosEtiquetas">
+  <div class="fila-filtros" id="filaEtiquetas">
+    <span class="etiqueta-filtros"><i class="ti ti-tags"></i> Etiquetas:</span>
+    <div id="etiquetasFiltroBotones" class="etiquetas-filtro-lista"></div>
+  </div>
+</div>
+
 <div class="filtros" id="filtros2">
   <div class="fila-filtros" id="filaEstado">
     <span class="etiqueta-filtros"><i class="ti ti-eye"></i> Estado:</span>
@@ -131,6 +140,7 @@
 <script type="module">
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
   const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
+  const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
 
   const $lista = document.getElementById('lista');
   const $buscar = document.getElementById('buscar');
@@ -140,6 +150,7 @@
   const $filaIzq = document.getElementById('filaIzq');
   const $filaReco = document.getElementById('filaReco');
   const $filaEstado = document.getElementById('filaEstado');
+  const $etiquetasFiltroBotones = document.getElementById('etiquetasFiltroBotones');
   const $filaPlataforma = document.getElementById('filaPlataforma');
   const $fAnio = document.getElementById('fAnio');
   const $overlayDetalle = document.getElementById('overlayDetalle');
@@ -158,11 +169,15 @@
 
   let registros = [];
   let plataformas = [];
+  let etiquetas = [];
+  let etiquetasFiltro = [];
   let filtro = '';
   let filtroTipo = '';
   let filtroRecomendado = '';
   let filtroEstado = '';
   let filtroPlataforma = '';
+  // 0 = sin orden, 1 = A-Z, 2 = Z-A
+  let ordenAZ = 0;
   const LOTE = 50;
   let visiblesMostrados = LOTE;
   let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
@@ -323,6 +338,52 @@
     }
   }
 
+  async function cargarEtiquetas() {
+    // carga el catálogo completo (paginado) para resolver nombres y búsquedas
+    let page = 1;
+    let items = [];
+    try {
+      while (true) {
+        const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
+        if (!res.ok) break;
+        const data = await res.json();
+        items = items.concat(data.items || []);
+        if (page >= data.totalPages) break;
+        page++;
+      }
+      etiquetas = items;
+    } catch (_) {}
+  }
+
+  // Construye los botones de etiquetas a partir de las que están en uso en los registros cargados
+  function renderEtiquetasFiltro() {
+    $etiquetasFiltroBotones.innerHTML = '';
+    const usadas = new Map();
+    for (const r of registros) {
+      const ids = Array.isArray(r.etiquetas) ? r.etiquetas : (r.etiquetas || '').split(',').filter(Boolean);
+      for (const id of ids) {
+        const e = etiquetas.find(x => x.id === id);
+        if (e && !usadas.has(id)) usadas.set(id, e);
+      }
+    }
+    const lista = Array.from(usadas.values()).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'));
+    for (const e of lista) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'etiqueta-btn' + (etiquetasFiltro.includes(e.id) ? ' activa' : '');
+      btn.textContent = e.etiqueta;
+      btn.onclick = () => {
+        etiquetasFiltro = etiquetasFiltro.includes(e.id)
+          ? etiquetasFiltro.filter(x => x !== e.id)
+          : etiquetasFiltro.concat(e.id);
+        renderEtiquetasFiltro();
+        resetCargaInfinita();
+        render();
+      };
+      $etiquetasFiltroBotones.appendChild(btn);
+    }
+  }
+
   const TIPOS = [
     { etiqueta: 'Todos', valor: '' },
     { etiqueta: 'Películas / Series', valor: 'video' },
@@ -373,6 +434,21 @@
       };
       $filaReco.appendChild(btn);
     }
+    // chip de orden
+    const chipOrden = document.createElement('button');
+    chipOrden.className = 'chip' + (ordenAZ ? ' activo' : '');
+    chipOrden.innerHTML = ordenAZ === 1
+      ? '<i class="ti ti-sort-a-z"></i> A-Z'
+      : ordenAZ === 2
+        ? '<i class="ti ti-sort-z-a"></i> Z-A'
+        : '<i class="ti ti-sort-a-z"></i> A-Z';
+    chipOrden.onclick = () => {
+      ordenAZ = (ordenAZ + 1) % 3;
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    $filaReco.appendChild(chipOrden);
     // Fila 3: estado (depende del tipo)
     $filaEstado.innerHTML = '<span class="etiqueta-filtros"><i class="ti ti-eye"></i> Estado:</span>';
     const estados = estadosSegunTipo();
@@ -401,6 +477,7 @@
       page++;
     }
     registros = items;
+    renderEtiquetasFiltro();
     render();
   }
 
@@ -460,11 +537,19 @@
       if (estado && r.visto !== estado) return false;
       if (anio && String(r.anio) !== anio) return false;
       if (plat && String(r.plataforma) !== plat) return false;
+      if (etiquetasFiltro.length) {
+        const idsRec = Array.isArray(r.etiquetas) ? r.etiquetas : (r.etiquetas || '').split(',').filter(Boolean);
+        if (!etiquetasFiltro.every(id => idsRec.includes(id))) return false;
+      }
       if (q && !normalizar(r.pelicula).includes(q) && !normalizar(r.dato || '').includes(q)) return false;
       return true;
     });
 
-    visibles.sort((a, b) => (b.anio || 0) - (a.anio || 0) || a.pelicula.localeCompare(b.pelicula, 'es'));
+    if (ordenAZ) {
+      visibles.sort((a, b) => a.pelicula.localeCompare(b.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
+    } else {
+      visibles.sort((a, b) => (b.anio || 0) - (a.anio || 0) || a.pelicula.localeCompare(b.pelicula, 'es'));
+    }
 
     $contador.textContent = visibles.length + ' resultado' + (visibles.length === 1 ? '' : 's');
     $lista.classList.toggle('modo-portada', modoVista === 'portada');
@@ -537,6 +622,8 @@
     filtroRecomendado = '';
     filtroEstado = '';
     filtroPlataforma = '';
+    etiquetasFiltro = [];
+    renderEtiquetasFiltro();
     $fAnio.value = '';
     construirFiltros();
     cargarPlataformas();
@@ -585,6 +672,7 @@
 
   construirFiltros();
   cargarPlataformas().catch(err => console.error('Error cargando plataformas', err));
+  cargarEtiquetas().catch(err => console.error('Error cargando etiquetas', err));
   cargar().catch(err => {
     $lista.innerHTML = '';
     const v = document.createElement('div');

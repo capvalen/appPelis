@@ -490,6 +490,8 @@
   .badge.NoRecomendado { background: var(--superficie-suave); color: var(--texto-suave); }
   .badge.clase { background: var(--superficie-suave); color: var(--texto-suave); }
   .badge.clase i { display: inline-block; vertical-align: -1px; }
+  .badge.etiqueta-badge { background: var(--morado-mas-claro); color: var(--morado-oscuro); }
+  .detalle-fila #dEtiquetas { display: flex; flex-wrap: wrap; gap: 6px; }
   .vacio {
     grid-column: 1 / -1;
     text-align: center;
@@ -540,6 +542,52 @@
     cursor: not-allowed;
   }
   .campo textarea { resize: vertical; min-height: 70px; }
+  .etiquetas-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .etiqueta-btn {
+    border: 1px solid var(--borde);
+    background: var(--superficie-suave);
+    color: var(--texto);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .etiqueta-btn:hover { border-color: var(--morado); color: var(--morado); }
+  .etiqueta-btn.activa {
+    background: var(--morado);
+    border-color: var(--morado);
+    color: #fff;
+  }
+  .etiquetas-resultados {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 160px;
+    overflow-y: auto;
+    margin-top: 6px;
+  }
+  .etiquetas-resultados button {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    background: var(--superficie-suave);
+    border: 1px solid var(--borde);
+    color: var(--texto);
+    font-weight: 500;
+    transition: background .15s, border-color .15s;
+  }
+  .etiquetas-resultados button:hover {
+    background: var(--morado-claro);
+    border-color: var(--morado);
+    color: var(--morado-oscuro);
+  }
   #btnEliminarPoster {
     padding: 6px 12px;
     font-size: .85rem;
