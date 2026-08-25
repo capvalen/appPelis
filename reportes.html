@@ -40,6 +40,16 @@
   .resultado-fila .nota .estrella { color: #facc15; font-size: .95rem; }
   .etiquetas-filtro-lista { display: flex; flex-wrap: wrap; gap: 6px; }
   .etiquetas-filtro-lista .etiqueta-btn { font-size: .78rem; padding: 4px 12px; }
+  .etiquetas-filtro-lista .expandir-btn {
+    background: transparent;
+    color: #6152ff;
+    border: 1px dashed var(--borde);
+    font-weight: 600;
+  }
+  .etiquetas-filtro-lista .expandir-btn:hover {
+    border-color: #6152ff;
+    background: var(--morado-claro);
+  }
 </style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
@@ -66,7 +76,6 @@
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
-    <a class="btn-config" href="/config.html" title="Configuración"><i class="ti ti-settings"></i></a>
   </div>
 </header>
 
@@ -171,6 +180,7 @@
   let plataformas = [];
   let etiquetas = [];
   let etiquetasFiltro = [];
+  let etiquetasExpandido = false;
   let filtro = '';
   let filtroTipo = '';
   let filtroRecomendado = '';
@@ -367,7 +377,9 @@
       }
     }
     const lista = Array.from(usadas.values()).sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'));
-    for (const e of lista) {
+    const limite = etiquetasExpandido ? lista.length : Math.min(6, lista.length);
+    const aMostrar = lista.slice(0, limite);
+    for (const e of aMostrar) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'etiqueta-btn' + (etiquetasFiltro.includes(e.id) ? ' activa' : '');
@@ -379,6 +391,19 @@
         renderEtiquetasFiltro();
         resetCargaInfinita();
         render();
+      };
+      $etiquetasFiltroBotones.appendChild(btn);
+    }
+    if (lista.length > 6) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'etiqueta-btn expandir-btn';
+      btn.innerHTML = etiquetasExpandido
+        ? '<i class="ti ti-layout-navbar-collapse"></i> contraer'
+        : '<i class="ti ti-layout-navbar-expand"></i> expandir';
+      btn.onclick = () => {
+        etiquetasExpandido = !etiquetasExpandido;
+        renderEtiquetasFiltro();
       };
       $etiquetasFiltroBotones.appendChild(btn);
     }
@@ -623,6 +648,7 @@
     filtroEstado = '';
     filtroPlataforma = '';
     etiquetasFiltro = [];
+    etiquetasExpandido = false;
     renderEtiquetasFiltro();
     $fAnio.value = '';
     construirFiltros();

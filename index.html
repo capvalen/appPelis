@@ -33,7 +33,6 @@
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
     </div>
-    <a class="btn-config" href="/config.html" title="Configuración"><i class="ti ti-settings"></i></a>
   </div>
 </header>
 
@@ -297,20 +296,8 @@
   ];
 
   async function cargarEtiquetas() {
-    // carga el catálogo completo (paginado) para resolver nombres y búsquedas
-    let page = 1;
-    let items = [];
-    try {
-      while (true) {
-        const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
-        if (!res.ok) break;
-        const data = await res.json();
-        items = items.concat(data.items || []);
-        if (page >= data.totalPages) break;
-        page++;
-      }
-      etiquetas = items;
-    } catch (_) {}
+    // Solo construye los botones base (las 15 iniciales); el resto se busca por URL al editar
+    etiquetas = ETIQUETAS_INICIALES;
     renderEtiquetasBotones();
   }
 
@@ -347,24 +334,28 @@
     const q = normalizar($buscarEtiqueta.value.trim());
     $etiquetasResultados.innerHTML = '';
     if (!q) return;
-    const candidatas = etiquetas.filter(e =>
-      !etiquetasSeleccionadas.includes(e.id) &&
-      normalizar(e.etiqueta).includes(q)
-    );
-    for (const e of candidatas.slice(0, 6)) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = e.etiqueta;
-      btn.onclick = () => {
-        etiquetasSeleccionadas.push(e.id);
-        if (!etiquetas.some(x => x.id === e.id)) etiquetas.push(e);
-        $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
-        $buscarEtiqueta.value = '';
-        $etiquetasResultados.innerHTML = '';
-        renderEtiquetasBotones();
-      };
-      $etiquetasResultados.appendChild(btn);
-    }
+    try {
+      // busca en el backend las etiquetas que coinciden con el término
+      const filtro = 'etiqueta ~ "' + q.replace(/"/g, '') + '"';
+      const res = await fetch(BASE_ETIQUETAS + '?perPage=8&sort=etiqueta&filter=' + encodeURIComponent(filtro));
+      if (!res.ok) return;
+      const data = await res.json();
+      const candidatas = (data.items || []).filter(e => !etiquetasSeleccionadas.includes(e.id));
+      for (const e of candidatas.slice(0, 6)) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = e.etiqueta;
+        btn.onclick = () => {
+          etiquetasSeleccionadas.push(e.id);
+          if (!etiquetas.some(x => x.id === e.id)) etiquetas.push(e);
+          $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
+          $buscarEtiqueta.value = '';
+          $etiquetasResultados.innerHTML = '';
+          renderEtiquetasBotones();
+        };
+        $etiquetasResultados.appendChild(btn);
+      }
+    } catch (_) {}
   }
 
   function buscarEtiquetaDebounce() {
@@ -393,7 +384,7 @@
     let page = 1;
     let items = [];
     while (true) {
-      const data = await api('?page=' + page + '&perPage=500&sort=-created&filter=' + encodeURIComponent('(clase != "juego" && clase != "libro")'));
+      const data = await api('?page=' + page + '&perPage=500&sort=-created&expand=etiquetas&filter=' + encodeURIComponent('(clase != "juego" && clase != "libro")'));
       items = items.concat(data.items);
       if (page >= data.totalPages) break;
       page++;
@@ -405,7 +396,7 @@
 
   async function cargarCarrusel() {
     try {
-      const data = await api('?perPage=10&filter=' + encodeURIComponent('(visto="Visto" || visto="Ver otra vez") && (clase != "juego" && clase != "libro")') + '&sort=-updated');
+      const data = await api('?perPage=10&expand=etiquetas&filter=' + encodeURIComponent('(visto="Visto" || visto="Ver otra vez") && (clase != "juego" && clase != "libro")') + '&sort=-updated');
       $carrusel.innerHTML = '';
       if (!data.items || !data.items.length) {
         $carruselWrap.style.display = 'none';
@@ -623,7 +614,11 @@
       : '—';
     const idsEtiquetas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
     if (idsEtiquetas.length) {
+      // usa el expand del backend si está disponible, sino el catálogo local (15 iniciales + agregadas)
+      const expandidas = (p.expand && Array.isArray(p.expand.etiquetas)) ? p.expand.etiquetas : [];
       const nombres = idsEtiquetas.map(id => {
+        const ex = expandidas.find(x => x.id === id);
+        if (ex) return ex.etiqueta;
         const e = etiquetas.find(x => x.id === id);
         return e ? e.etiqueta : id;
       });
@@ -756,6 +751,12 @@
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
     etiquetasSeleccionadas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
+    // agrega al catálogo local las etiquetas expandidas del registro para poder mostrar sus nombres
+    if (p.expand && Array.isArray(p.expand.etiquetas)) {
+      for (const ex of p.expand.etiquetas) {
+        if (!etiquetas.some(x => x.id === ex.id)) etiquetas.push(ex);
+      }
+    }
     $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
     $buscarEtiqueta.value = '';
     $etiquetasResultados.innerHTML = '';
