@@ -33,6 +33,12 @@
     --rojo: #f87171;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  img {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     background: var(--fondo);

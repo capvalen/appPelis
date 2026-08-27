@@ -82,7 +82,9 @@
     border-radius: 6px;
     font-size: .75rem;
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
+    min-width: 150px;
+    max-width: 250px;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -152,6 +154,18 @@
     var oscuro = localStorage.getItem('modoOscuro') !== 'false';
     if (oscuro) document.documentElement.classList.add('tema-oscuro');
   })();
+</script>
+<script>
+  // Bloquear el menú contextual (clic derecho) en toda la página
+  document.addEventListener('contextmenu', e => e.preventDefault(), true);
+  // Evitar arrastrar imágenes fuera de la página
+  document.addEventListener('dragstart', e => {
+    if (e.target.closest('img')) e.preventDefault();
+  }, true);
+  // Marcar todas las imágenes (incluidas las dinámicas) como no arrastrables
+  const marcarImagenes = () => document.querySelectorAll('img').forEach(img => { img.draggable = false; });
+  marcarImagenes();
+  new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
 </script>
 </head>
 <body>
@@ -293,6 +307,37 @@
       $mapa.appendChild(div);
     }
   }
+
+  // Ajusta el tooltip para que no se salga del contenedor (clave en móvil)
+  function posicionarTooltip(cuadrito) {
+    const tooltip = cuadrito.querySelector('.tooltip');
+    if (!tooltip) return;
+    const mapRect = $mapa.getBoundingClientRect();
+    const rect = cuadrito.getBoundingClientRect();
+    // Centrado por defecto
+    tooltip.style.left = '50%';
+    tooltip.style.right = 'auto';
+    tooltip.style.transform = 'translateX(-50%)';
+    const tRect = tooltip.getBoundingClientRect();
+    // Límites reales: borde del contenedor, sin salir del viewport
+    const limiteIzq = Math.max(mapRect.left, 0);
+    const limiteDer = Math.min(mapRect.right, window.innerWidth);
+    if (tRect.left < limiteIzq) {
+      // Se sale por la izquierda: anclar al borde izquierdo del contenedor
+      tooltip.style.left = (limiteIzq - rect.left) + 'px';
+      tooltip.style.transform = 'none';
+    } else if (tRect.right > limiteDer) {
+      // Se sale por la derecha: anclar al borde derecho del contenedor
+      tooltip.style.left = 'auto';
+      tooltip.style.right = (limiteDer - rect.right) + 'px';
+      tooltip.style.transform = 'none';
+    }
+  }
+
+  $mapa.addEventListener('mouseover', e => {
+    const cuadrito = e.target.closest('.cuadrito');
+    if (cuadrito) posicionarTooltip(cuadrito);
+  });
 
   let debounceTimer = null;
   $buscar.addEventListener('input', e => {

@@ -41,6 +41,18 @@
     if (oscuro) document.documentElement.classList.add('tema-oscuro');
   })();
 </script>
+<script>
+  // Bloquear el menú contextual (clic derecho) en toda la página
+  document.addEventListener('contextmenu', e => e.preventDefault(), true);
+  // Evitar arrastrar imágenes fuera de la página
+  document.addEventListener('dragstart', e => {
+    if (e.target.closest('img')) e.preventDefault();
+  }, true);
+  // Marcar todas las imágenes (incluidas las dinámicas) como no arrastrables
+  const marcarImagenes = () => document.querySelectorAll('img').forEach(img => { img.draggable = false; });
+  marcarImagenes();
+  new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
+</script>
 </head>
 <body>
 
