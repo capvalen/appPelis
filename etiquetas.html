@@ -308,36 +308,41 @@
     }
   }
 
-  // Ajusta el tooltip para que no se salga del contenedor (clave en móvil)
+  // Ajusta el tooltip para que no se salga del contenedor ni del viewport
   function posicionarTooltip(cuadrito) {
     const tooltip = cuadrito.querySelector('.tooltip');
     if (!tooltip) return;
     const mapRect = $mapa.getBoundingClientRect();
     const rect = cuadrito.getBoundingClientRect();
-    // Centrado por defecto
+    const viewportPadding = 8;
+
+    // Resetear a centrado y medir
     tooltip.style.left = '50%';
     tooltip.style.right = 'auto';
     tooltip.style.transform = 'translateX(-50%)';
     const tRect = tooltip.getBoundingClientRect();
-    // Límites reales: borde del contenedor, sin salir del viewport
-    const limiteIzq = Math.max(mapRect.left, 0);
-    const limiteDer = Math.min(mapRect.right, window.innerWidth);
+
+    // Límites: borde del contenedor, sin salir del viewport
+    const limiteIzq = Math.max(mapRect.left, viewportPadding);
+    const limiteDer = Math.min(mapRect.right, window.innerWidth - viewportPadding);
+
     if (tRect.left < limiteIzq) {
-      // Se sale por la izquierda: anclar al borde izquierdo del contenedor
+      // Se sale por la izquierda: alinear borde izquierdo del tooltip con el límite
       tooltip.style.left = (limiteIzq - rect.left) + 'px';
+      tooltip.style.right = 'auto';
       tooltip.style.transform = 'none';
     } else if (tRect.right > limiteDer) {
       // Se sale por la derecha: anclar al borde derecho del contenedor
       tooltip.style.left = 'auto';
-      tooltip.style.right = (limiteDer - rect.right) + 'px';
+      tooltip.style.right = (rect.right - limiteDer) + 'px';
       tooltip.style.transform = 'none';
     }
   }
 
-  $mapa.addEventListener('mouseover', e => {
+  $mapa.addEventListener('mouseenter', e => {
     const cuadrito = e.target.closest('.cuadrito');
     if (cuadrito) posicionarTooltip(cuadrito);
-  });
+  }, true);
 
   let debounceTimer = null;
   $buscar.addEventListener('input', e => {

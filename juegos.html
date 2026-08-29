@@ -565,8 +565,18 @@
 
   function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
 
+  const COMPLETADOS_JUEGOS = ['Jugado'];
+  const PENDIENTES_JUEGOS = ['Pendiente', 'Jugando', 'Volver a jugar'];
+
+  function esCandidatoAleatorio(p) {
+    const modo = localStorage.getItem('modoAleatorio') || 'pendientes';
+    if (modo === 'ambos') return COMPLETADOS_JUEGOS.includes(p.visto) || PENDIENTES_JUEGOS.includes(p.visto);
+    if (modo === 'completados') return COMPLETADOS_JUEGOS.includes(p.visto);
+    return PENDIENTES_JUEGOS.includes(p.visto);
+  }
+
   function abrirAleatorio() {
-    const candidatas = peliculas.filter(p => p.visto === 'Pendiente' || p.visto === 'Volver a jugar');
+    const candidatas = peliculas.filter(esCandidatoAleatorio);
     aleaActual = null;
     $btnAleaDetalle.style.display = 'none';
     $aleaResultado.classList.remove('visible');

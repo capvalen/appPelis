@@ -149,6 +149,19 @@
 
   <div class="tarjeta">
     <div class="info">
+      <div class="titulo"><i class="ti ti-dice-5"></i> Aleatorio</div>
+      <div class="descripcion">Elige qué elementos pueden salir en la ruleta aleatoria.</div>
+      <div class="estado" id="estadoAleatorio"></div>
+    </div>
+    <div class="opciones">
+      <button type="button" class="opcion-vista" id="aleaPendientes"><i class="ti ti-circle-plus-2"></i> Solo pendientes</button>
+      <button type="button" class="opcion-vista" id="aleaCompletados"><i class="ti ti-checks"></i> Completados</button>
+      <button type="button" class="opcion-vista" id="aleaAmbos"><i class="ti ti-arrows-shuffle"></i> Ambos</button>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="info">
       <div class="titulo"><i class="ti ti-tags"></i> Directorio de etiquetas</div>
       <div class="descripcion">Consulta todas las etiquetas disponibles y cuántas veces se usan.</div>
     </div>
@@ -159,8 +172,8 @@
 <footer class="credito">
   <div>Aplicativo creado por Carlos Pariona V.</div>
   <div>Página web <a href="https://infocatsoluciones.com" target="_blank" rel="noopener noreferrer">https://infocatsoluciones.com</a></div>
-  <div>Correo de contacto <a href="mailto:servidor@infocatsoluciones.com">servidor@infocatsoluciones.com</a></div>
-  <div>Versión: 1.07</div>
+  <div>Contacto y sugerencias <a href="mailto:servidor@infocatsoluciones.com">servidor@infocatsoluciones.com</a></div>
+  <div>Versión: 1.09</div>
 </footer>
 
 <script>
@@ -193,6 +206,26 @@
   $vistaTitulos.onclick = () => { localStorage.setItem('modoVista', 'titulos'); aplicarVista(); };
   $vistaPortada.onclick = () => { localStorage.setItem('modoVista', 'portada'); aplicarVista(); };
   aplicarVista();
+
+  // modo aleatorio
+  const $estadoAleatorio = document.getElementById('estadoAleatorio');
+  const $aleaPendientes = document.getElementById('aleaPendientes');
+  const $aleaCompletados = document.getElementById('aleaCompletados');
+  const $aleaAmbos = document.getElementById('aleaAmbos');
+
+  function aplicarAleatorio() {
+    const modo = localStorage.getItem('modoAleatorio') || 'pendientes';
+    $aleaPendientes.classList.toggle('activo', modo === 'pendientes');
+    $aleaCompletados.classList.toggle('activo', modo === 'completados');
+    $aleaAmbos.classList.toggle('activo', modo === 'ambos');
+    const etiquetas = { pendientes: 'Solo pendientes', completados: 'Completados', ambos: 'Ambos' };
+    $estadoAleatorio.textContent = etiquetas[modo] || 'Solo pendientes';
+  }
+
+  $aleaPendientes.onclick = () => { localStorage.setItem('modoAleatorio', 'pendientes'); aplicarAleatorio(); };
+  $aleaCompletados.onclick = () => { localStorage.setItem('modoAleatorio', 'completados'); aplicarAleatorio(); };
+  $aleaAmbos.onclick = () => { localStorage.setItem('modoAleatorio', 'ambos'); aplicarAleatorio(); };
+  aplicarAleatorio();
 </script>
 
 </body>
