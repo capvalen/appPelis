@@ -110,6 +110,7 @@
   marcarImagenes();
   new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
 </script>
+<script src="/menu-navegacion.js"></script>
 </head>
 <body>
 
@@ -119,16 +120,7 @@
     <h1>Configuración</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
-    <div class="menu-wrap">
-      <button type="button" class="btn-menu" id="btnMenu" title="Menú"><i class="ti ti-menu-2"></i></button>
-      <nav class="menu-panel" id="menuPanel">
-        <a href="/index.html"><i class="ti ti-device-tv"></i> Películas / Series</a>
-        <a href="/juegos.html"><i class="ti ti-device-gamepad"></i> Juegos</a>
-        <a href="/etiquetas.html"><i class="ti ti-tags"></i> Etiquetas</a>
-        <a href="/reportes.html"><i class="ti ti-chart-bar"></i> Reportes</a>
-        <a href="/config.html" class="activo"><i class="ti ti-settings"></i> Configuración</a>
-      </nav>
-    </div>
+    <menu-navegacion activo="config"></menu-navegacion>
   </div>
 </header>
 
@@ -237,13 +229,6 @@
   $aleaCompletados.onclick = () => { localStorage.setItem('modoAleatorio', 'completados'); aplicarAleatorio(); };
   $aleaAmbos.onclick = () => { localStorage.setItem('modoAleatorio', 'ambos'); aplicarAleatorio(); };
   aplicarAleatorio();
-
-  // menú
-  document.getElementById('btnMenu').onclick = (e) => {
-    e.stopPropagation();
-    document.getElementById('menuPanel').classList.toggle('abierto');
-  };
-  document.addEventListener('click', () => document.getElementById('menuPanel').classList.remove('abierto'));
 </script>
 
 </body>
