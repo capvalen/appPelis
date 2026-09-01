@@ -172,13 +172,13 @@
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <img class="logo" src="/assets/martian.png" alt="Videoteca">
+    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
     <h1>Directorio de etiquetas</h1>
   </div>
 </header>
 
 <div class="mapa-volver">
-  <a class="btn-volver" href="/config.html" style="display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:.95rem;"><i class="ti ti-arrow-left"></i> Volver</a>
+  <button type="button" class="btn-volver" id="btnVolver" style="display:inline-flex; align-items:center; gap:6px; padding:10px 18px; border-radius:10px; text-decoration:none; font-weight:600; font-size:.95rem; cursor:pointer;"><i class="ti ti-arrow-left"></i> Volver</button>
 </div>
 <h2 class="titulo-mapa"><i class="ti ti-tags"></i> Mapa de etiquetas</h2>
 <div class="mapa-cuadritos" id="mapa"></div>
@@ -295,7 +295,15 @@
     $mapa.innerHTML = '';
     const usos = window.__usosEtiquetas || new Map();
     const maxUsos = Math.max(1, ...Array.from(usos.values()));
-    for (const e of etiquetas) {
+    // mismo orden que la cuadrícula: letras primero, símbolos al final
+    const ordenadas = [...etiquetas].sort((a, b) => {
+      const aIsLetter = /^[a-záéíóúñ]/i.test(a.etiqueta);
+      const bIsLetter = /^[a-záéíóúñ]/i.test(b.etiqueta);
+      if (aIsLetter && !bIsLetter) return -1;
+      if (!aIsLetter && bIsLetter) return 1;
+      return a.etiqueta.localeCompare(b.etiqueta, 'es');
+    });
+    for (const e of ordenadas) {
       const usosE = usos.get(e.id) || 0;
       const div = document.createElement('div');
       let nivel = 0;
@@ -365,6 +373,7 @@
     render();
     $buscar.focus();
   };
+  document.getElementById('btnVolver').onclick = () => history.back();
   window.addEventListener('scroll', () => {
     $btnSubir.classList.toggle('visible', window.scrollY > 300);
   });

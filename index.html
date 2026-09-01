@@ -32,7 +32,7 @@
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <img class="logo" src="/assets/martian.png" alt="Videoteca">
+    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
     <h1>Videoteca</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
@@ -41,6 +41,7 @@
       <nav class="menu-panel" id="menuPanel">
         <a href="/index.html" class="activo"><i class="ti ti-device-tv"></i> Películas / Series</a>
         <a href="/juegos.html"><i class="ti ti-device-gamepad"></i> Juegos</a>
+        <a href="/etiquetas.html"><i class="ti ti-tags"></i> Etiquetas</a>
         <a href="/reportes.html"><i class="ti ti-chart-bar"></i> Reportes</a>
         <a href="/config.html"><i class="ti ti-settings"></i> Configuración</a>
       </nav>
@@ -124,8 +125,12 @@
         </select>
       </div>
       <div class="campo">
-        <label for="fNota"><i class="ti ti-star"></i> Calificación</label>
-        <input type="number" id="fNota" min="0" max="5" step="0.1">
+        <label for="fNotaSlider"><i class="ti ti-star"></i> Calificación <span class="nota-label" id="notaLabel">Sin calificar</span></label>
+        <input type="hidden" id="fNota">
+        <div class="nota-slider-wrap">
+          <input type="range" id="fNotaSlider" min="0" max="5" step="0.1" value="2.5">
+          <button type="button" class="btn-limpiar-nota" id="btnLimpiarNota" title="Borrar calificación"><i class="ti ti-eraser"></i></button>
+        </div>
       </div>
       <div class="campo">
         <label for="fAnio"><i class="ti ti-calendar"></i> Año</label>
@@ -240,6 +245,9 @@
   const $etiquetasBotones = document.getElementById('etiquetasBotones');
   const $buscarEtiqueta = document.getElementById('buscarEtiqueta');
   const $etiquetasResultados = document.getElementById('etiquetasResultados');
+  const $fNotaSlider = document.getElementById('fNotaSlider');
+  const $notaLabel = document.getElementById('notaLabel');
+  const $btnLimpiarNota = document.getElementById('btnLimpiarNota');
 
   let peliculas = [];
   let plataformas = [];
@@ -258,6 +266,7 @@
   let aleaCara = 1;
   // modo de vista y carga infinita
   let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
+  let notaTocada = false;
   const LOTE = 20;
   let visiblesMostrados = LOTE;
   let cargandoLote = false;
@@ -360,8 +369,9 @@
     $etiquetasResultados.innerHTML = '';
     if (!q) return;
     try {
-      // busca en el backend las etiquetas que coinciden con el término
-      const filtro = 'etiqueta ~ "' + q.replace(/"/g, '') + '"';
+      // busca en el backend las etiquetas que coinciden con el término (nombre o alternativo)
+      const termino = q.replace(/"/g, '');
+      const filtro = '(etiqueta ~ "' + termino + '" || alternativo ~ "' + termino + '")';
       const res = await fetch(BASE_ETIQUETAS + '?perPage=8&sort=etiqueta&filter=' + encodeURIComponent(filtro));
       if (!res.ok) return;
       const data = await res.json();
@@ -522,7 +532,7 @@
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
-            (p.nota ? '<span class="nota"><i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
+            (p.nota ? '<span class="nota"><i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="acciones">' +
@@ -541,7 +551,7 @@
       '<div class="nombre"></div>' +
       '<div class="meta">' + badge(p.visto) + badgeClase(p.clase) +
         (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
-        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
+        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
       '</div>' +
       '<div class="acciones">' +
         '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
@@ -557,7 +567,7 @@
   function render() {
     const q = normalizar(filtro);
     // Construir lista de visibles con info de match por etiqueta
-    const visiblesInfo = [];
+    let visiblesInfo = [];
     let porEtiqueta = 0;
     for (const p of peliculas) {
       if (filtroVisto && p.visto !== filtroVisto) continue;
@@ -569,11 +579,11 @@
         visiblesInfo.push({ p, tagMatch: null });
         continue;
       }
-      // buscar en etiquetas expandidas
+      // buscar en etiquetas expandidas (nombre y alternativo)
       const etiquetasExpandidas = (p.expand && Array.isArray(p.expand.etiquetas)) ? p.expand.etiquetas : [];
       let foundTag = null;
       for (const e of etiquetasExpandidas) {
-        if (normalizar(e.etiqueta || '').includes(q)) { foundTag = e.etiqueta; break; }
+        if (normalizar(e.etiqueta || '').includes(q) || normalizar(e.alternativo || '').includes(q)) { foundTag = e.etiqueta; break; }
       }
       if (foundTag) {
         visiblesInfo.push({ p, tagMatch: foundTag });
@@ -611,6 +621,24 @@
     }
     if (ordenAZ) {
       visiblesInfo.sort((a, b) => a.p.pelicula.localeCompare(b.p.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
+    }
+    if (ordenAleatorio) {
+      // sortea una sola vez por conjunto de filtros; la carga infinita respeta ese orden
+      const clave = filtro + '|' + filtroVisto + '|' + filtroClase + '|' + filtroRecomendado + '|' + ordenAZ;
+      if (clave !== claveOrden) {
+        for (let i = visiblesInfo.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [visiblesInfo[i], visiblesInfo[j]] = [visiblesInfo[j], visiblesInfo[i]];
+        }
+        ordenMezclado = visiblesInfo.map(v => v.p.id);
+        claveOrden = clave;
+      } else {
+        const porId = new Map(visiblesInfo.map(v => [v.p.id, v]));
+        visiblesInfo = ordenMezclado
+          .map(id => porId.get(id))
+          .filter(Boolean)
+          .concat(visiblesInfo.filter(v => !ordenMezclado.includes(v.p.id)));
+      }
     }
     const aMostrar = visiblesInfo.slice(0, visiblesMostrados);
     for (const vi of aMostrar) $lista.appendChild(tarjeta(vi.p));
@@ -667,8 +695,9 @@
       $dPlataforma.innerHTML = '';
       $dPlataformaFila.style.display = 'none';
     }
-    $dNota.innerHTML = p.nota
-      ? '<i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota
+    const notaNum = Number(p.nota);
+    $dNota.innerHTML = (!isNaN(notaNum) && notaNum > 0)
+      ? '<i class="' + iconoNota(notaNum) + ' estrella"></i> ' + notaNum
       : '—';
     const idsEtiquetas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
     if (idsEtiquetas.length) {
@@ -784,6 +813,26 @@
     document.getElementById('labelPelicula').textContent = 'Título de la ' + tipo;
   }
 
+  function aplicarNotaSlider() {
+    if (!notaTocada) return;
+    const val = $fNotaSlider.value;
+    $formulario.fNota.value = val;
+    $notaLabel.innerHTML = '(<i class="' + iconoNota(val) + '"></i> ' + val + ')';
+  }
+
+  function sincronizarNotaSlider(valor) {
+    notaTocada = false;
+    $formulario.fNota.value = valor || '';
+    const n = Number(valor);
+    if (valor !== '' && valor != null && !isNaN(n) && n > 0) {
+      $fNotaSlider.value = String(n);
+      $notaLabel.innerHTML = '(<i class="' + iconoNota(n) + '"></i> ' + n + ')';
+    } else {
+      $fNotaSlider.value = '2.5';
+      $notaLabel.textContent = 'Sin calificar';
+    }
+  }
+
   function abrirCrear() {
     modo = 'crear';
     idEditando = null;
@@ -792,6 +841,7 @@
     $formulario.fClase.value = 'película';
     $formulario.fVisto.value = 'Falta ver';
     $formulario.fPlataforma.value = '';
+    sincronizarNotaSlider('');
     $formulario.fRecomendable.checked = false;
     etiquetasSeleccionadas = [];
     $formulario.fEtiquetas.value = '';
@@ -816,7 +866,7 @@
     $formulario.fPlataforma.value = p.plataforma || '';
     $formulario.fDato.value = p.dato || '';
     $formulario.fLink.value = p.link || '';
-    $formulario.fNota.value = p.nota || '';
+    sincronizarNotaSlider(p.nota);
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
     etiquetasSeleccionadas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
@@ -925,7 +975,7 @@
       visto: $formulario.fVisto.value,
       dato: $formulario.fDato.value.trim(),
       link: $formulario.fLink.value.trim(),
-      nota: $formulario.fNota.value.trim(),
+      nota: $formulario.fNota.value.trim() || '',
       anio: $formulario.fAnio.value.trim(),
       recomendable: $formulario.fRecomendable.checked
     };
@@ -988,6 +1038,9 @@
   ];
   // 0 = sin orden, 1 = A-Z, 2 = Z-A
   let ordenAZ = 0;
+  let ordenAleatorio = localStorage.getItem('ordenAleatorio') === '1';
+  let ordenMezclado = null; // ids en orden sorteado
+  let claveOrden = ''; // filtros con los que se generó el sorteo
 
   function resetCargaInfinita() {
     visiblesMostrados = LOTE;
@@ -1066,6 +1119,19 @@
       };
       filaClase.appendChild(btn);
     }
+    // chip de desordenar lista
+    const chipAleatorio = document.createElement('button');
+    chipAleatorio.className = 'chip' + (ordenAleatorio ? ' activo' : '');
+    chipAleatorio.innerHTML = '<i class="ti ti-arrows-shuffle"></i> Al azar';
+    chipAleatorio.title = 'Desordenar lista';
+    chipAleatorio.onclick = () => {
+      ordenAleatorio = !ordenAleatorio;
+      localStorage.setItem('ordenAleatorio', ordenAleatorio ? '1' : '0');
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    filaClase.appendChild(chipAleatorio);
     $filtros.appendChild(filaClase);
   }
 
@@ -1129,6 +1195,9 @@
     mostrarToast('Poster eliminado');
   };
   $formulario.fClase.addEventListener('change', actualizarLabelPelicula);
+  $fNotaSlider.addEventListener('input', () => { notaTocada = true; aplicarNotaSlider(); });
+  $fNotaSlider.addEventListener('change', () => { notaTocada = true; aplicarNotaSlider(); });
+  $btnLimpiarNota.onclick = () => sincronizarNotaSlider('');
   $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
   $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
   document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;

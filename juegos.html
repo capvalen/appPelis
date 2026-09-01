@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Juegos - Infocat</title>
+  <title>Juegos</title>
   <link rel="icon" type="image/png" href="/assets/martian.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 	<link rel="manifest" href="/manifest.json">
@@ -58,8 +58,8 @@
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <img class="logo" src="/assets/martian.png" alt="Videoteca">
-    <h1>Juegos ~ Infocat</h1>
+    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
+    <h1>Juegos</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
     <div class="menu-wrap">
@@ -126,8 +126,12 @@
         </select>
       </div>
       <div class="campo">
-        <label for="fNota"><i class="ti ti-star"></i> Calificación</label>
-        <input type="number" id="fNota" min="0" max="5" step="0.1">
+        <label for="fNotaSlider"><i class="ti ti-star"></i> Calificación <span class="nota-label" id="notaLabel">Sin calificar</span></label>
+        <input type="hidden" id="fNota">
+        <div class="nota-slider-wrap">
+          <input type="range" id="fNotaSlider" min="0" max="5" step="0.1" value="2.5">
+          <button type="button" class="btn-limpiar-nota" id="btnLimpiarNota" title="Borrar calificación"><i class="ti ti-eraser"></i></button>
+        </div>
       </div>
       <div class="campo">
         <label for="fAnio"><i class="ti ti-calendar"></i> Año</label>
@@ -248,6 +252,9 @@
   const $buscarJuegoResultados = document.getElementById('buscarJuegoResultados');
   const $carrusel = document.getElementById('carrusel');
   const $carruselWrap = document.getElementById('carruselWrap');
+  const $fNotaSlider = document.getElementById('fNotaSlider');
+  const $notaLabel = document.getElementById('notaLabel');
+  const $btnLimpiarNota = document.getElementById('btnLimpiarNota');
 
   let peliculas = [];
   let filtro = '';
@@ -263,6 +270,7 @@
   let aleaCara = 1;
   // modo de vista y carga infinita
   let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
+  let notaTocada = false;
   const LOTE = 20;
   let visiblesMostrados = LOTE;
   let cargandoLote = false;
@@ -424,7 +432,7 @@
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
-            (p.nota ? '<span class="nota"><i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
+            (p.nota ? '<span class="nota"><i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
           '</div>' +
         '</div>' +
         '<div class="acciones">' +
@@ -445,7 +453,7 @@
         (p.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
         badge(p.visto) + badgeClase(p.clase) +
         (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
-        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(p.nota) + ' estrella"></i> ' + p.nota + '</span>' : '') +
+        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
       '</div>' +
       '<div class="acciones">' +
         '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
@@ -460,7 +468,7 @@
 
   function render() {
     const q = normalizar(filtro);
-    const visibles = peliculas.filter(p => {
+    let visibles = peliculas.filter(p => {
       if (filtroVisto && p.visto !== filtroVisto) return false;
       if (filtroRecomendado === 'si' && !p.recomendable) return false;
       if (!q) return true;
@@ -486,6 +494,24 @@
     }
     if (ordenAZ) {
       visibles.sort((a, b) => a.pelicula.localeCompare(b.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
+    }
+    if (ordenAleatorio) {
+      // sortea una sola vez por conjunto de filtros; la carga infinita respeta ese orden
+      const clave = filtro + '|' + filtroVisto + '|' + filtroRecomendado + '|' + ordenAZ;
+      if (clave !== claveOrden) {
+        for (let i = visibles.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [visibles[i], visibles[j]] = [visibles[j], visibles[i]];
+        }
+        ordenMezclado = visibles.map(p => p.id);
+        claveOrden = clave;
+      } else {
+        const porId = new Map(visibles.map(p => [p.id, p]));
+        visibles = ordenMezclado
+          .map(id => porId.get(id))
+          .filter(Boolean)
+          .concat(visibles.filter(p => !ordenMezclado.includes(p.id)));
+      }
     }
     const aMostrar = visibles.slice(0, visiblesMostrados);
     for (const p of aMostrar) $lista.appendChild(tarjeta(p));
@@ -527,8 +553,9 @@
     $dVisto.innerHTML = badgeClase(p.clase) + badge(p.visto);
     $dDato.textContent = p.dato ? p.dato : '—';
     $dUbicacion.textContent = p.ubicacion ? p.ubicacion : '—';
-    $dNota.innerHTML = p.nota
-      ? '<i class="ti ti-star-filled estrella"></i> ' + p.nota
+    const notaNum = Number(p.nota);
+    $dNota.innerHTML = (!isNaN(notaNum) && notaNum > 0)
+      ? '<i class="' + iconoNota(notaNum) + ' estrella"></i> ' + notaNum
       : '—';
     $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
     mostrarPoster(p.poster);
@@ -629,6 +656,26 @@
     cerrarOverlay($overlayAleatorio);
   }
 
+  function aplicarNotaSlider() {
+    if (!notaTocada) return;
+    const val = $fNotaSlider.value;
+    $formulario.fNota.value = val;
+    $notaLabel.innerHTML = '(<i class="' + iconoNota(val) + '"></i> ' + val + ')';
+  }
+
+  function sincronizarNotaSlider(valor) {
+    notaTocada = false;
+    $formulario.fNota.value = valor || '';
+    const n = Number(valor);
+    if (valor !== '' && valor != null && !isNaN(n) && n > 0) {
+      $fNotaSlider.value = String(n);
+      $notaLabel.innerHTML = '(<i class="' + iconoNota(n) + '"></i> ' + n + ')';
+    } else {
+      $fNotaSlider.value = '2.5';
+      $notaLabel.textContent = 'Sin calificar';
+    }
+  }
+
   function abrirCrear() {
     modo = 'crear';
     idEditando = null;
@@ -637,6 +684,7 @@
     $formulario.fPoster.value = '';
     $formulario.fVisto.value = 'Pendiente';
     $formulario.fRecomendable.checked = false;
+    sincronizarNotaSlider('');
     document.getElementById('btnEliminarPoster').style.display = 'none';
     $modalTitulo.textContent = 'Agregar juego';
     abrirBuscarJuego();
@@ -651,7 +699,7 @@
     $formulario.fVisto.value = p.visto;
     $formulario.fDato.value = p.dato || '';
     $formulario.fUbicacion.value = p.ubicacion || '';
-    $formulario.fNota.value = p.nota || '';
+    sincronizarNotaSlider(p.nota);
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
     document.getElementById('btnEliminarPoster').style.display = '';
@@ -780,7 +828,7 @@
       visto: $formulario.fVisto.value,
       dato: $formulario.fDato.value.trim(),
       ubicacion: $formulario.fUbicacion.value.trim(),
-      nota: $formulario.fNota.value.trim(),
+      nota: $formulario.fNota.value.trim() || '',
       anio: $formulario.fAnio.value.trim(),
       recomendable: $formulario.fRecomendable.checked
     };
@@ -818,6 +866,9 @@
   const ESTADOS = ['Pendiente', 'Jugado', 'Jugando', 'Volver a jugar'];
   // 0 = sin orden, 1 = A-Z, 2 = Z-A
   let ordenAZ = 0;
+  let ordenAleatorio = localStorage.getItem('ordenAleatorio') === '1';
+  let ordenMezclado = null; // ids en orden sorteado
+  let claveOrden = ''; // filtros con los que se generó el sorteo
 
   function resetCargaInfinita() {
     visiblesMostrados = LOTE;
@@ -871,6 +922,19 @@
       render();
     };
     filaEstado.appendChild(chipReco);
+    // chip de desordenar lista
+    const chipAleatorio = document.createElement('button');
+    chipAleatorio.className = 'chip' + (ordenAleatorio ? ' activo' : '');
+    chipAleatorio.innerHTML = '<i class="ti ti-arrows-shuffle"></i> Al azar';
+    chipAleatorio.title = 'Desordenar lista';
+    chipAleatorio.onclick = () => {
+      ordenAleatorio = !ordenAleatorio;
+      localStorage.setItem('ordenAleatorio', ordenAleatorio ? '1' : '0');
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    filaEstado.appendChild(chipAleatorio);
     $filtros.appendChild(filaEstado);
   }
 
@@ -940,6 +1004,9 @@
     mostrarToast('Poster eliminado');
   };
   $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
+  $fNotaSlider.addEventListener('input', () => { notaTocada = true; aplicarNotaSlider(); });
+  $fNotaSlider.addEventListener('change', () => { notaTocada = true; aplicarNotaSlider(); });
+  $btnLimpiarNota.onclick = () => sincronizarNotaSlider('');
   $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
   document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
   document.getElementById('btnCerrarPoster').onclick = cerrarSelectorPoster;
