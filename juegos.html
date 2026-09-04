@@ -422,6 +422,7 @@
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
         (p.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
+        (p.visto === 'Jugado' ? '<span class="cinta-jugado">Jugado</span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +

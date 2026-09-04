@@ -397,7 +397,7 @@
     pointer-events: none;
   }
   .tarjeta.portada .jugando-badge { top: 8px; left: 8px; }
-  .cinta-viendo {
+  .cinta-viendo, .cinta-jugado {
     position: absolute;
     top: 18px;
     left: -32px;
@@ -415,7 +415,7 @@
     pointer-events: none;
     white-space: nowrap;
   }
-  .tarjeta.portada .cinta-viendo { top: 11px; left: -30px; }
+  .tarjeta.portada .cinta-viendo, .tarjeta.portada .cinta-jugado { top: 11px; left: -30px; }
   .tarjeta .meta .jugando-badge {
     position: static;
     display: inline-flex;
