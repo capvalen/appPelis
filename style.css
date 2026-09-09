@@ -522,6 +522,25 @@
     color: var(--texto-suave);
     padding: 48px 0;
   }
+  .carga {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 48px 0;
+    color: var(--texto-suave);
+    font-size: .9rem;
+  }
+  .carga .spinner {
+    width: 42px;
+    height: 42px;
+    border: 4px solid var(--morado-claro);
+    border-top-color: var(--morado);
+    border-radius: 50%;
+    animation: girar .8s linear infinite;
+  }
+  @keyframes girar { to { transform: rotate(360deg); } }
   .overlay {
     position: fixed;
     inset: 0;

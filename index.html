@@ -520,7 +520,7 @@
         : '/assets/want.jpg';
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
-        (p.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' : '') +
+        ((p.visto === 'Viendo' || p.visto === 'Ver otra vez') ? '<span class="cinta-viendo">Viendo</span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
@@ -599,8 +599,8 @@
     $lista.innerHTML = '';
     if (!peliculas.length) {
       const v = document.createElement('div');
-      v.className = 'vacio';
-      v.textContent = 'Cargando...';
+      v.className = 'carga';
+      v.innerHTML = '<div class="spinner"></div><span>Listando las mejores películas…</span>';
       $lista.appendChild(v);
       return;
     }

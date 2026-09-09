@@ -422,7 +422,7 @@
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
         (p.visto === 'Jugando' ? '<span class="jugando-badge"><i class="ti ti-device-gamepad-2"></i></span>' : '') +
-        (p.visto === 'Jugado' ? '<span class="cinta-jugado">Jugado</span>' : '') +
+        ((p.visto === 'Jugado' || p.visto === 'Volver a jugar') ? '<span class="cinta-jugado">Jugado</span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
@@ -474,8 +474,8 @@
     $lista.innerHTML = '';
     if (!peliculas.length) {
       const v = document.createElement('div');
-      v.className = 'vacio';
-      v.textContent = 'Cargando...';
+      v.className = 'carga';
+      v.innerHTML = '<div class="spinner"></div><span>Preparando tus juegos…</span>';
       $lista.appendChild(v);
       return;
     }

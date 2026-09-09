@@ -48,3 +48,13 @@ class MenuNavegacion extends HTMLElement {
 }
 
 customElements.define('menu-navegacion', MenuNavegacion);
+
+if ('serviceWorker' in navigator) {
+  const registrarSW = () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => { if (reg.active) reg.update().catch(() => {}); })
+      .catch(() => {});
+  };
+  if (document.readyState === 'complete') registrarSW();
+  else window.addEventListener('load', registrarSW);
+}
