@@ -8,6 +8,40 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 	<link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/style.css">
+<style>
+  .loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+  }
+  .loader.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .loader-content {
+    text-align: center;
+    color: white;
+  }
+  .loader-content p {
+    margin-top: 1rem;
+  }
+  .modal-aleatorio .alea-img {
+    display: block;
+    width: 90%;
+    max-height: 350px;
+  }
+  .cinta-viendo {
+    text-align: center;
+  }
+</style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
   (function () {
@@ -30,6 +64,145 @@
 <script src="/menu-navegacion.js"></script>
 </head>
 <body>
+
+<div id="loader" class="loader">
+  <div class="loader-content">
+    <svg version="1.1" id="cog9_1_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 36 36" style="width: 80px; height: 80px; fill: currentColor;" xml:space="preserve">
+      <style>.box5532 {
+        fill:currentColor;
+        transform-origin: 50% 50%;
+      }
+      @keyframes box5532-1 {
+        9.0909090909% { transform: translate(-12px, 0); }
+        18.1818181818% { transform: translate(0px, 0); }
+        27.2727272727% { transform: translate(0px, 0); }
+        36.3636363636% { transform: translate(12px, 0); }
+        45.4545454545% { transform: translate(12px, 12px); }
+        54.5454545455% { transform: translate(12px, 12px); }
+        63.6363636364% { transform: translate(12px, 12px); }
+        72.7272727273% { transform: translate(12px, 0px); }
+        81.8181818182% { transform: translate(0px, 0px); }
+        90.9090909091% { transform: translate(-12px, 0px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(1) { animation: box5532-1 4s infinite; }
+      @keyframes box5532-2 {
+        9.0909090909% { transform: translate(0, 0); }
+        18.1818181818% { transform: translate(12px, 0); }
+        27.2727272727% { transform: translate(0px, 0); }
+        36.3636363636% { transform: translate(12px, 0); }
+        45.4545454545% { transform: translate(12px, 12px); }
+        54.5454545455% { transform: translate(12px, 12px); }
+        63.6363636364% { transform: translate(12px, 12px); }
+        72.7272727273% { transform: translate(12px, 12px); }
+        81.8181818182% { transform: translate(0px, 12px); }
+        90.9090909091% { transform: translate(0px, 12px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(2) { animation: box5532-2 4s infinite; }
+      @keyframes box5532-3 {
+        9.0909090909% { transform: translate(-12px, 0); }
+        18.1818181818% { transform: translate(-12px, 0); }
+        27.2727272727% { transform: translate(0px, 0); }
+        36.3636363636% { transform: translate(-12px, 0); }
+        45.4545454545% { transform: translate(-12px, 0); }
+        54.5454545455% { transform: translate(-12px, 0); }
+        63.6363636364% { transform: translate(-12px, 0); }
+        72.7272727273% { transform: translate(-12px, 0); }
+        81.8181818182% { transform: translate(-12px, -12px); }
+        90.9090909091% { transform: translate(0px, -12px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(3) { animation: box5532-3 4s infinite; }
+      @keyframes box5532-4 {
+        9.0909090909% { transform: translate(-12px, 0); }
+        18.1818181818% { transform: translate(-12px, 0); }
+        27.2727272727% { transform: translate(-12px, -12px); }
+        36.3636363636% { transform: translate(0px, -12px); }
+        45.4545454545% { transform: translate(0px, 0px); }
+        54.5454545455% { transform: translate(0px, -12px); }
+        63.6363636364% { transform: translate(0px, -12px); }
+        72.7272727273% { transform: translate(0px, -12px); }
+        81.8181818182% { transform: translate(-12px, -12px); }
+        90.9090909091% { transform: translate(-12px, 0px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(4) { animation: box5532-4 4s infinite; }
+      @keyframes box5532-5 {
+        9.0909090909% { transform: translate(0, 0); }
+        18.1818181818% { transform: translate(0, 0); }
+        27.2727272727% { transform: translate(0, 0); }
+        36.3636363636% { transform: translate(12px, 0); }
+        45.4545454545% { transform: translate(12px, 0); }
+        54.5454545455% { transform: translate(12px, 0); }
+        63.6363636364% { transform: translate(12px, 0); }
+        72.7272727273% { transform: translate(12px, 0); }
+        81.8181818182% { transform: translate(12px, -12px); }
+        90.9090909091% { transform: translate(0px, -12px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(5) { animation: box5532-5 4s infinite; }
+      @keyframes box5532-6 {
+        9.0909090909% { transform: translate(0, 0); }
+        18.1818181818% { transform: translate(-12px, 0); }
+        27.2727272727% { transform: translate(-12px, 0); }
+        36.3636363636% { transform: translate(0px, 0); }
+        45.4545454545% { transform: translate(0px, 0); }
+        54.5454545455% { transform: translate(0px, 0); }
+        63.6363636364% { transform: translate(0px, 0); }
+        72.7272727273% { transform: translate(0px, 12px); }
+        81.8181818182% { transform: translate(-12px, 12px); }
+        90.9090909091% { transform: translate(-12px, 0px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(6) { animation: box5532-6 4s infinite; }
+      @keyframes box5532-7 {
+        9.0909090909% { transform: translate(12px, 0); }
+        18.1818181818% { transform: translate(12px, 0); }
+        27.2727272727% { transform: translate(12px, 0); }
+        36.3636363636% { transform: translate(0px, 0); }
+        45.4545454545% { transform: translate(0px, -12px); }
+        54.5454545455% { transform: translate(12px, -12px); }
+        63.6363636364% { transform: translate(0px, -12px); }
+        72.7272727273% { transform: translate(0px, -12px); }
+        81.8181818182% { transform: translate(0px, 0px); }
+        90.9090909091% { transform: translate(12px, 0px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(7) { animation: box5532-7 4s infinite; }
+      @keyframes box5532-8 {
+        9.0909090909% { transform: translate(0, 0); }
+        18.1818181818% { transform: translate(-12px, 0); }
+        27.2727272727% { transform: translate(-12px, -12px); }
+        36.3636363636% { transform: translate(0px, -12px); }
+        45.4545454545% { transform: translate(0px, -12px); }
+        54.5454545455% { transform: translate(0px, -12px); }
+        63.6363636364% { transform: translate(0px, -12px); }
+        72.7272727273% { transform: translate(0px, -12px); }
+        81.8181818182% { transform: translate(12px, -12px); }
+        90.9090909091% { transform: translate(12px, 0px); }
+        100% { transform: translate(0px, 0px); }
+      }
+      .box5532:nth-child(8) { animation: box5532-8 4s infinite; }
+      @keyframes box5532-9 {
+        9.0909090909% { transform: translate(-12px, 0); }
+        18.1818181818% { transform: translate(-12px, 0); }
+        27.2727272727% { transform: translate(0px, 0); }
+        36.3636363636% { transform: translate(-12px, 0); }
+        45.4545454545% { transform: translate(0px, 0); }
+        54.5454545455% { transform: translate(0px, 0); }
+        63.6363636364% { transform: translate(-12px, 0); }
+        72.7272727273% { transform: translate(-12px, 0); }
+        81.8181818182% { transform: translate(-24px, 0); }
+        90.9090909091% { transform: translate(-12px, 0); }
+        100% { transform: translate(0px, 0); }
+      }
+      .box5532:nth-child(9) { animation: box5532-9 4s infinite; }</style>
+      <g><rect class="box5532" x="13" y="1" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="1" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="1" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="25" rx="1" width="10" height="10"/></g>
+    </svg>
+    <p>Conectando con la nube</p>
+  </div>
+</div>
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
@@ -89,7 +262,7 @@
         <div id="etiquetasBotones" class="etiquetas-botones"></div>
         <input type="hidden" id="fEtiquetas">
         <div class="buscar-wrap">
-          <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta...">
+          <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta..." autocomplete="off">
           <button class="btn-limpiar" id="btnLimpiarEtiqueta" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
         </div>
         <div id="etiquetasResultados" class="etiquetas-resultados"></div>
@@ -128,12 +301,22 @@
         <label for="fAnio"><i class="ti ti-calendar"></i> Año</label>
         <input type="number" id="fAnio" min="1888" max="2100" step="1">
       </div>
-      <div class="campo">
-        <label for="fRecomendable"><i class="ti ti-thumb-up"></i> Recomendable</label>
-        <div class="switch">
-          <input type="checkbox" id="fRecomendable">
-          <span class="pista"></span>
-          <span class="perilla"></span>
+      <div class="campo" style="display:flex; gap:20px; align-items:center">
+        <div style="flex:1">
+          <label for="fRecomendable"><i class="ti ti-thumb-up"></i> Yo recomiendo</label>
+          <div class="switch">
+            <input type="checkbox" id="fRecomendable">
+            <span class="pista"></span>
+            <span class="perilla"></span>
+          </div>
+        </div>
+        <div style="flex:1">
+          <label for="fRecomiendan"><i class="ti ti-thumb-up"></i> Me recomiendan</label>
+          <div class="switch">
+            <input type="checkbox" id="fRecomiendan">
+            <span class="pista"></span>
+            <span class="perilla"></span>
+          </div>
         </div>
       </div>
       <div class="modal-acciones">
@@ -160,6 +343,7 @@
     <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
     <div class="recomendada-centrado" id="dRecomendableFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></div>
+    <div class="recomendada-centrado" id="dRecomiendanFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Me recomiendan</span></div>
     <div class="modal-acciones">
       <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
       <button type="button" class="btn-primario" id="btnEditarDesdeDetalle"><i class="ti ti-pencil"></i> Editar</button>
@@ -176,6 +360,7 @@
     </div>
     <div class="alea-resultado" id="aleaResultado"></div>
     <div class="modal-acciones">
+      <button type="button" class="btn-primario" id="btnAleaOtra" style="display:none"><i class="ti ti-dice-5"></i> Vamos, de nuevo</button>
       <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver detalles</button>
     </div>
   </div>
@@ -225,10 +410,12 @@
   const $dEtiquetasDetalle = document.getElementById('dEtiquetasDetalle');
   const $dNota = document.getElementById('dNota');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
+  const $dRecomiendanFila = document.getElementById('dRecomiendanFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
   const $aleaBusqueda = document.getElementById('aleaBusqueda');
   const $aleaResultado = document.getElementById('aleaResultado');
   const $btnAleaDetalle = document.getElementById('btnAleaDetalle');
+  const $btnAleaOtra = document.getElementById('btnAleaOtra');
   const $aleaDado = document.getElementById('aleaDado');
   const $overlayPoster = document.getElementById('overlayPoster');
   const $posterGrid = document.getElementById('posterGrid');
@@ -249,12 +436,14 @@
   let filtroVisto = '';
   let filtroClase = '';
   let filtroRecomendado = '';
+  let filtroRecomendadoMe = '';
   let modo = 'crear';
   let idEditando = null;
   let detalleActual = null;
   let posterRegistro = null;
   let aleaActual = null;
   let aleaIntervalo = null;
+  let aleaTimeout = null;
   let aleaCara = 1;
   // modo de vista y carga infinita
   let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
@@ -292,7 +481,7 @@
     const res = await fetch(BASE_PLATAFORMAS + '?perPage=200');
     if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
     const data = await res.json();
-    plataformas = data.items || [];
+    plataformas = (data.items || []).sort((a, b) => nombrePlataforma(a).localeCompare(nombrePlataforma(b), 'es'));
     const $sel = document.getElementById('fPlataforma');
     $sel.innerHTML = '<option value="">Sin plataforma</option>';
     for (const p of plataformas) {
@@ -419,6 +608,9 @@
     peliculas = items;
     render();
     cargarCarrusel();
+    const $loader = document.getElementById('loader');
+    $loader.classList.add('hidden');
+    setTimeout(() => { $loader.style.display = 'none'; }, 500);
   }
 
   async function cargarCarrusel() {
@@ -520,7 +712,9 @@
         : '/assets/want.jpg';
       div.innerHTML =
         '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
-        ((p.visto === 'Viendo' || p.visto === 'Ver otra vez') ? '<span class="cinta-viendo">Viendo</span>' : '') +
+        (p.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' :
+         p.visto === 'Visto' ? '<span class="cinta-viendo">Visto</span>' :
+         (p.visto === 'Ver otra vez' || p.visto === 'Volver a ver') ? '<span class="cinta-viendo">De nuevo</span>' : '') +
         '<div class="info">' +
           '<div class="nombre"></div>' +
           '<div class="meta">' +
@@ -565,6 +759,7 @@
       if (filtroVisto && p.visto !== filtroVisto) continue;
       if (filtroClase && (p.clase || 'película') !== filtroClase) continue;
       if (filtroRecomendado === 'si' && !p.recomendable) continue;
+      if (filtroRecomendadoMe === 'si' && !p.recomiendan) continue;
       if (!q) { visiblesInfo.push({ p, tagMatch: null }); continue; }
       // buscar en título y dato
       if (normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q)) {
@@ -708,6 +903,7 @@
       $dEtiquetasDetalle.style.display = 'none';
     }
     $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
+    $dRecomiendanFila.style.display = p.recomiendan ? '' : 'none';
     mostrarPoster(p.poster);
     abrirOverlay($overlayDetalle);
   }
@@ -750,6 +946,7 @@
     const candidatas = peliculas.filter(esCandidatoAleatorio);
     aleaActual = null;
     $btnAleaDetalle.style.display = 'none';
+    $btnAleaOtra.style.display = 'none';
     $aleaResultado.classList.remove('visible');
     $aleaResultado.innerHTML = '';
     $aleaBusqueda.style.display = 'flex';
@@ -759,8 +956,9 @@
       return;
     }
     abrirOverlay($overlayAleatorio);
-    // efecto de dados: alterna dice_1 / dice_2 en bucle mientras "sortean"
+    // Cancelar cualquier animación anterior
     clearInterval(aleaIntervalo);
+    clearTimeout(aleaTimeout);
     aleaCara = 1;
     $aleaDado.src = dadoSrc(1);
     aleaIntervalo = setInterval(() => {
@@ -768,35 +966,63 @@
       $aleaDado.src = dadoSrc(aleaCara);
     }, 250);
     // efecto de búsqueda por 1 segundo, luego elige al azar
-    setTimeout(() => {
+    aleaTimeout = setTimeout(() => {
       clearInterval(aleaIntervalo);
       aleaIntervalo = null;
+      aleaTimeout = null;
       const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
       aleaActual = elegida;
       $aleaBusqueda.style.display = 'none';
-      $aleaResultado.innerHTML =
-        '<img class="alea-img" src="' + (elegida.poster ? 'https://image.tmdb.org/t/p/w500/' + elegida.poster : '/assets/want.jpg') + '" alt="Película">' +
-        '<div class="alea-hora">Es hora de ver...</div>' +
-        '<div class="alea-titulo-fila">' +
-          '<div class="alea-titulo">' + tituloConAnio(elegida) + '</div>' +
-          '<button type="button" class="btn-copiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>' +
-        '</div>' +
-        '<div class="alea-meta">' + badge(elegida.visto) + badgeClase(elegida.clase) + '</div>';
-      $aleaResultado.querySelector('.btn-copiar').onclick = () => {
+      $aleaResultado.innerHTML = '';
+      const img = document.createElement('img');
+      img.className = 'alea-img';
+      img.src = elegida.poster ? 'https://image.tmdb.org/t/p/w500/' + elegida.poster : '/assets/want.jpg';
+      img.alt = 'Película';
+      img.style.cursor = 'pointer';
+      img.onclick = () => {
+        cerrarAleatorio();
+        setTimeout(() => { abrirDetalle(elegida); }, 250);
+      };
+      $aleaResultado.appendChild(img);
+      const hora = document.createElement('div');
+      hora.className = 'alea-hora';
+      hora.textContent = 'Es hora de ver...';
+      $aleaResultado.appendChild(hora);
+      const filaTitulo = document.createElement('div');
+      filaTitulo.className = 'alea-titulo-fila';
+      const titulo = document.createElement('div');
+      titulo.className = 'alea-titulo';
+      titulo.textContent = tituloConAnio(elegida);
+      filaTitulo.appendChild(titulo);
+      const btnCopiar = document.createElement('button');
+      btnCopiar.type = 'button';
+      btnCopiar.className = 'btn-copiar';
+      btnCopiar.title = 'Copiar título';
+      btnCopiar.innerHTML = '<i class="ti ti-clipboard"></i>';
+      btnCopiar.onclick = () => {
         navigator.clipboard.writeText(elegida.pelicula).then(() => {
           mostrarToast('Título copiado');
         }).catch(() => {
           mostrarToast('Error al copiar');
         });
       };
+      filaTitulo.appendChild(btnCopiar);
+      $aleaResultado.appendChild(filaTitulo);
+      const meta = document.createElement('div');
+      meta.className = 'alea-meta';
+      meta.innerHTML = badge(elegida.visto) + badgeClase(elegida.clase);
+      $aleaResultado.appendChild(meta);
       $aleaResultado.classList.add('visible');
       $btnAleaDetalle.style.display = '';
+      $btnAleaOtra.style.display = '';
     }, 1000);
   }
 
   function cerrarAleatorio() {
     clearInterval(aleaIntervalo);
+    clearTimeout(aleaTimeout);
     aleaIntervalo = null;
+    aleaTimeout = null;
     cerrarOverlay($overlayAleatorio);
   }
 
@@ -835,6 +1061,7 @@
     $formulario.fPlataforma.value = '';
     sincronizarNotaSlider('');
     $formulario.fRecomendable.checked = false;
+    $formulario.fRecomiendan.checked = false;
     etiquetasSeleccionadas = [];
     $formulario.fEtiquetas.value = '';
     $buscarEtiqueta.value = '';
@@ -861,6 +1088,7 @@
     sincronizarNotaSlider(p.nota);
     $formulario.fAnio.value = p.anio || '';
     $formulario.fRecomendable.checked = !!p.recomendable;
+    $formulario.fRecomiendan.checked = !!p.recomiendan;
     etiquetasSeleccionadas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
     // agrega al catálogo local las etiquetas expandidas del registro para poder mostrar sus nombres
     if (p.expand && Array.isArray(p.expand.etiquetas)) {
@@ -911,12 +1139,16 @@
           await cargar();
           cerrarOverlay($overlayDetalle);
           setTimeout(() => abrirDetalle(detalleActual), 250);
+        } else {
+          $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
         }
       } else if (data.results && data.results.length > 1) {
         abrirSelectorPoster(data.results, detalleActual);
+      } else {
+        $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
       }
     } catch (err) {
-      mostrarToast('Error: ' + err.message);
+      $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
     }
   }
 
@@ -969,7 +1201,8 @@
       link: $formulario.fLink.value.trim(),
       nota: $formulario.fNota.value.trim() || '',
       anio: $formulario.fAnio.value.trim(),
-      recomendable: $formulario.fRecomendable.checked
+      recomendable: $formulario.fRecomendable.checked,
+      recomiendan: $formulario.fRecomiendan.checked
     };
     try {
       let registro;
@@ -1078,14 +1311,27 @@
     // chip de recomendados
     const chipReco = document.createElement('button');
     chipReco.className = 'chip' + (filtroRecomendado ? ' activo' : '');
-    chipReco.innerHTML = '<i class="ti ti-thumb-up"></i> Mis recomendaciones';
+    chipReco.innerHTML = '<i class="ti ti-thumb-up"></i> Yo recomiendo';
     chipReco.onclick = () => {
       filtroRecomendado = filtroRecomendado ? '' : 'si';
+      filtroRecomendadoMe = '';
       construirFiltros();
       resetCargaInfinita();
       render();
     };
     filaEstado.appendChild(chipReco);
+    // chip de me recomiendan
+    const chipRecoMe = document.createElement('button');
+    chipRecoMe.className = 'chip' + (filtroRecomendadoMe ? ' activo' : '');
+    chipRecoMe.innerHTML = '<i class="ti ti-thumb-up"></i> Me recomendaron';
+    chipRecoMe.onclick = () => {
+      filtroRecomendadoMe = filtroRecomendadoMe ? '' : 'si';
+      filtroRecomendado = '';
+      construirFiltros();
+      resetCargaInfinita();
+      render();
+    };
+    filaEstado.appendChild(chipRecoMe);
     $filtros.appendChild(filaEstado);
 
     const filaClase = document.createElement('div');
@@ -1181,6 +1427,10 @@
       if (aleaActual) abrirDetalle(aleaActual);
     }, 250);
   };
+  document.getElementById('btnAleaOtra').onclick = () => {
+    cerrarAleatorio();
+    setTimeout(() => abrirAleatorio(), 250);
+  };
   document.getElementById('btnCancelar').onclick = cerrarModal;
   document.getElementById('btnEliminarPoster').onclick = () => {
     $formulario.fPoster.value = '';
@@ -1255,6 +1505,9 @@
     v.className = 'vacio';
     v.textContent = 'No se pudo cargar: ' + err.message;
     $lista.appendChild(v);
+    const $loader = document.getElementById('loader');
+    $loader.classList.add('hidden');
+    setTimeout(() => { $loader.style.display = 'none'; }, 500);
   });
 </script>
 
