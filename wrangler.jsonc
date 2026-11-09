@@ -1,0 +1,31 @@
+{
+  // ---------------------------------------------------------------------------
+  // Configuración de despliegue en Cloudflare Workers (Workers Static Assets)
+  // Frontend Vite -> carpeta ./dist
+  // ---------------------------------------------------------------------------
+
+  // Nombre del Worker.
+  // IMPORTANTE: debe coincidir EXACTAMENTE con el nombre del Worker que ya
+  // existe en el dashboard de Cloudflare ("videoteca"). Si no coincide,
+  // Wrangler creará/desplegará OTRO Worker y el deploy parecerá "atascado".
+  "name": "videoteca",
+
+  // ID de la cuenta de Cloudflare.
+  // Si tu login tiene acceso a más de una cuenta, es obligatorio indicarlo aquí
+  // o el deploy puede fallar de forma silenciosa/silenciosa ("atascado").
+  // Obtén el valor con:  npx wrangler whoami
+  // Descomenta la línea y pega tu account_id (32 caracteres hex).
+  // "account_id": "00000000000000000000000000000000",
+
+  // Fecha de compatibilidad del runtime (debe ser <= hoy).
+  "compatibility_date": "2026-09-07",
+
+  // Sitio estático generado por Vite (`npm run build` -> ./dist).
+  // No hay entry point de Worker: solo se sirven los assets.
+  "assets": {
+    "directory": "./dist"
+    // Este es un sitio multipágina (index.html, juegos.html, config.html, ...),
+    // por eso NO se usa "single-page-application".
+    // "not_found_handling": "single-page-application"
+  }
+}
