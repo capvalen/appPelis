@@ -1,5 +1,6 @@
 // menu-navegacion.js — Web Component reutilizable del menú de navegación
-// Uso: <menu-navegacion activo="index|juegos|etiquetas|reportes|config"></menu-navegacion>
+// Uso: <menu-navegacion activo="peliculas|juegos|etiquetas|reportes|config"></menu-navegacion>
+// Incluye la entrada "Salir" que cierra la sesión (usa window.PBSesion si está disponible).
 // Usa luz DOM (sin shadow root) para heredar los estilos globales de style.css
 class MenuNavegacion extends HTMLElement {
   connectedCallback() {
@@ -8,7 +9,7 @@ class MenuNavegacion extends HTMLElement {
 
     const actual = (this.getAttribute('activo') || '').toLowerCase();
     const enlaces = [
-      { href: '/index.html', clave: 'index', icono: 'ti ti-device-tv', texto: 'Películas / Series' },
+      { href: '/peliculas.html', clave: 'peliculas', icono: 'ti ti-device-tv', texto: 'Películas / Series' },
       { href: '/juegos.html', clave: 'juegos', icono: 'ti ti-device-gamepad', texto: 'Juegos' },
       { href: '/etiquetas.html', clave: 'etiquetas', icono: 'ti ti-tags', texto: 'Etiquetas' },
       { href: '/reportes.html', clave: 'reportes', icono: 'ti ti-chart-bar', texto: 'Reportes' },
@@ -23,6 +24,7 @@ class MenuNavegacion extends HTMLElement {
             '<a href="' + e.href + '"' + (e.clave === actual ? ' class="activo"' : '') + '>' +
             '<i class="' + e.icono + '"></i> ' + e.texto + '</a>'
           ).join('') +
+          '<a href="#" class="menu-salir"><i class="ti ti-logout"></i> Salir</a>' +
         '</nav>' +
       '</div>';
 
@@ -35,8 +37,16 @@ class MenuNavegacion extends HTMLElement {
       panel.classList.toggle('abierto');
     });
 
-    // cerrar al hacer clic en un enlace
+    // cerrar al hacer clic en un enlace o salir de la sesión
     panel.addEventListener('click', (e) => {
+      const salir = e.target.closest('.menu-salir');
+      if (salir) {
+        e.preventDefault();
+        panel.classList.remove('abierto');
+        if (window.PBSesion) window.PBSesion.cerrar();
+        else location.replace('/index.html');
+        return;
+      }
       if (e.target.closest('a')) panel.classList.remove('abierto');
     });
 

@@ -110,13 +110,14 @@
   marcarImagenes();
   new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
 </script>
+<script src="/pb-sesion.js"></script>
 <script src="/menu-navegacion.js"></script>
 </head>
 <body>
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
+    <a href="/peliculas.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
     <h1>Configuración</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
@@ -174,10 +175,15 @@
 
 <footer class="credito">
   <div>Aplicativo creado por Carlos Pariona V.</div>
-  <div>Página web <a href="https://infocatsoluciones.com" target="_blank" rel="noopener noreferrer">https://infocatsoluciones.com</a></div>
+  <div>Página web <a href="https://infocatsoluciones.com" target="_blank" rel="noopener">https://infocatsoluciones.com</a></div>
   <div>Contacto y sugerencias <a href="mailto:servidor@infocatsoluciones.com">servidor@infocatsoluciones.com</a></div>
-  <div>Versión: 1.12</div>
+  <div>Versión: <span id="appVersion"></span></div>
 </footer>
+
+<script type="module">
+  // Versión de la app (inyectada desde package.json en el build)
+  document.getElementById('appVersion').textContent = __APP_VERSION__;
+</script>
 
 <script>
   const $switch = document.getElementById('modoOscuro');

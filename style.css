@@ -144,6 +144,14 @@
   .menu-panel a:hover { background: var(--morado-claro); color: var(--morado-oscuro); }
   .menu-panel a.activo { background: var(--morado); color: #fff; }
   .menu-panel a.activo i { color: #fff; }
+  .menu-panel .menu-salir {
+    margin-top: 4px;
+    border-top: 1px solid var(--borde);
+    padding-top: 10px;
+    color: var(--rojo);
+  }
+  .menu-panel .menu-salir i { color: var(--rojo); }
+  .menu-panel .menu-salir:hover { background: var(--superficie-suave); color: var(--rojo); }
   .toolbar {
     max-width: 1100px;
     margin: 24px auto 0;

@@ -83,6 +83,11 @@
   marcarImagenes();
   new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
 </script>
+<script src="/pb-sesion.js"></script>
+<script>
+  // Control de sesión: sin un token válido no se muestra esta página
+  PBSesion.exigir();
+</script>
 <script src="/menu-navegacion.js"></script>
 </head>
 <body>
@@ -228,7 +233,7 @@
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
+    <a href="/peliculas.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
     <h1>Juegos</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
@@ -396,6 +401,14 @@
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
   const STEAM_PROXY = 'https://steam-db.infocatsoluciones.deno.net/api';
 
+  function authHeaders(extra) {
+    return PBSesion.headers(extra);
+  }
+
+  function idUsuario() {
+    return PBSesion.id();
+  }
+
   const $lista = document.getElementById('lista');
   const $buscar = document.getElementById('buscar');
   const $contador = document.getElementById('contador');
@@ -476,9 +489,10 @@
 
   async function api(path = '', options = {}) {
     const res = await fetch(BASE + path, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options
+      ...options,
+      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
     });
+    if (res.status === 401) { PBSesion.cerrar(); throw new Error('Sesión expirada'); }
     if (!res.ok) {
       let msg = 'Error ' + res.status;
       try {
@@ -1051,6 +1065,7 @@
       recomiendan: $formulario.fRecomiendan.checked
     };
     if (juegoSteamId) body.id_auxiliar = juegoSteamId;
+    body.user_id = idUsuario();
     try {
       let registro;
       if (modo === 'crear') {

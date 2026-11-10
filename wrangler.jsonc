@@ -24,7 +24,7 @@
   // No hay entry point de Worker: solo se sirven los assets.
   "assets": {
     "directory": "./dist"
-    // Este es un sitio multipágina (index.html, juegos.html, config.html, ...),
+    // Este es un sitio multipágina (index.html, peliculas.html, juegos.html, config.html, ...),
     // por eso NO se usa "single-page-application".
     // "not_found_handling": "single-page-application"
   }

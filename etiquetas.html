@@ -167,13 +167,18 @@
   marcarImagenes();
   new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
 </script>
+<script src="/pb-sesion.js"></script>
+<script>
+  // Control de sesión: sin un token válido no se muestra esta página
+  PBSesion.exigir();
+</script>
 <script src="/menu-navegacion.js"></script>
 </head>
 <body>
 
 <header>
   <div style="display:flex; align-items:center; gap:10px;">
-    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
+    <a href="/peliculas.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
     <h1>Directorio de etiquetas</h1>
   </div>
   <div style="display:flex; align-items:center; gap:6px;">
@@ -206,6 +211,10 @@
   const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
   const BASE_PELICULAS = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
 
+  function authHeaders(extra) {
+    return PBSesion.headers(extra);
+  }
+
   const $grid = document.getElementById('grid');
   const $mapa = document.getElementById('mapa');
   const $buscar = document.getElementById('buscar');
@@ -222,9 +231,10 @@
 
   async function api(path = '', options = {}) {
     const res = await fetch(BASE_PELICULAS + path, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options
+      ...options,
+      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
     });
+    if (res.status === 401) { PBSesion.cerrar(); throw new Error('Sesión expirada'); }
     if (!res.ok) {
       let msg = 'Error ' + res.status;
       try {
@@ -240,7 +250,7 @@
     let page = 1;
     let items = [];
     while (true) {
-      const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
+      const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page, { headers: authHeaders() });
       if (!res.ok) break;
       const data = await res.json();
       items = items.concat(data.items || []);

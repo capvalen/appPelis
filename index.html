@@ -3,44 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Películas - Videoteca</title>
+  <title>Iniciar sesión - Videoteca</title>
   <link rel="icon" type="image/png" href="/assets/martian.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-	<link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/style.css">
 <style>
-  .loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+  .login-wrap {
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-index: 9999;
-    transition: opacity 0.5s ease-out;
+    justify-content: center;
+    padding: 24px;
   }
-  .loader.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-  .loader-content {
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 12px 40px rgba(150, 91, 239, .18);
     text-align: center;
-    color: white;
   }
-  .loader-content p {
-    margin-top: 1rem;
-  }
-  .modal-aleatorio .alea-img {
+  html.tema-oscuro .login-card { box-shadow: 0 12px 40px rgba(0, 0, 0, .5); }
+  .login-card .logo {
     display: block;
-    width: 90%;
-    max-height: 350px;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid var(--morado);
+    object-fit: cover;
+    box-shadow: 0 6px 20px rgba(150, 91, 239, .28);
   }
-  .cinta-viendo {
-    text-align: center;
+  .login-card h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--morado);
+    margin-bottom: 6px;
   }
+  .login-card p.sub {
+    color: var(--texto-suave);
+    font-size: .9rem;
+    margin-bottom: 26px;
+  }
+  .btn-google {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto);
+    font-size: .98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+  }
+  .btn-google:hover { border-color: var(--morado); box-shadow: 0 4px 16px rgba(150, 91, 239, .2); }
+  .btn-google:disabled { opacity: .6; cursor: default; box-shadow: none; }
+  .btn-google svg { width: 20px; height: 20px; flex: 0 0 auto; }
+  .login-estado {
+    margin-top: 20px;
+    min-height: 22px;
+    font-size: .88rem;
+    color: var(--texto-suave);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .login-estado.error { color: var(--rojo); }
+  .login-estado.exito { color: var(--morado); }
+  .spinner-login {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--borde);
+    border-top-color: var(--morado);
+    border-radius: 50%;
+    animation: girar-login .7s linear infinite;
+  }
+  @keyframes girar-login { to { transform: rotate(360deg); } }
+  .login-nota {
+    margin-top: 22px;
+    font-size: .78rem;
+    color: var(--texto-suave);
+    line-height: 1.5;
+  }
+  .login-version {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: var(--morado);
+  }
+  .login-version i { font-size: .95rem; }
+  .login-credito { margin-top: 4px; }
+  .login-credito a { color: var(--morado); text-decoration: none; }
+  .login-credito a:hover { text-decoration: underline; }
 </style>
 <script>
   // Aplicar el tema antes del primer render para evitar parpadeo
@@ -49,1466 +113,238 @@
     if (oscuro) document.documentElement.classList.add('tema-oscuro');
   })();
 </script>
-<script>
-  // Bloquear el menú contextual (clic derecho) en toda la página
-  document.addEventListener('contextmenu', e => e.preventDefault(), true);
-  // Evitar arrastrar imágenes fuera de la página
-  document.addEventListener('dragstart', e => {
-    if (e.target.closest('img')) e.preventDefault();
-  }, true);
-  // Marcar todas las imágenes (incluidas las dinámicas) como no arrastrables
-  const marcarImagenes = () => document.querySelectorAll('img').forEach(img => { img.draggable = false; });
-  marcarImagenes();
-  new MutationObserver(marcarImagenes).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-<script src="/menu-navegacion.js"></script>
 </head>
 <body>
 
-<div id="loader" class="loader">
-  <div class="loader-content">
-    <svg version="1.1" id="cog9_1_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 36 36" style="width: 80px; height: 80px; fill: currentColor;" xml:space="preserve">
-      <style>.box5532 {
-        fill:currentColor;
-        transform-origin: 50% 50%;
-      }
-      @keyframes box5532-1 {
-        9.0909090909% { transform: translate(-12px, 0); }
-        18.1818181818% { transform: translate(0px, 0); }
-        27.2727272727% { transform: translate(0px, 0); }
-        36.3636363636% { transform: translate(12px, 0); }
-        45.4545454545% { transform: translate(12px, 12px); }
-        54.5454545455% { transform: translate(12px, 12px); }
-        63.6363636364% { transform: translate(12px, 12px); }
-        72.7272727273% { transform: translate(12px, 0px); }
-        81.8181818182% { transform: translate(0px, 0px); }
-        90.9090909091% { transform: translate(-12px, 0px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(1) { animation: box5532-1 4s infinite; }
-      @keyframes box5532-2 {
-        9.0909090909% { transform: translate(0, 0); }
-        18.1818181818% { transform: translate(12px, 0); }
-        27.2727272727% { transform: translate(0px, 0); }
-        36.3636363636% { transform: translate(12px, 0); }
-        45.4545454545% { transform: translate(12px, 12px); }
-        54.5454545455% { transform: translate(12px, 12px); }
-        63.6363636364% { transform: translate(12px, 12px); }
-        72.7272727273% { transform: translate(12px, 12px); }
-        81.8181818182% { transform: translate(0px, 12px); }
-        90.9090909091% { transform: translate(0px, 12px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(2) { animation: box5532-2 4s infinite; }
-      @keyframes box5532-3 {
-        9.0909090909% { transform: translate(-12px, 0); }
-        18.1818181818% { transform: translate(-12px, 0); }
-        27.2727272727% { transform: translate(0px, 0); }
-        36.3636363636% { transform: translate(-12px, 0); }
-        45.4545454545% { transform: translate(-12px, 0); }
-        54.5454545455% { transform: translate(-12px, 0); }
-        63.6363636364% { transform: translate(-12px, 0); }
-        72.7272727273% { transform: translate(-12px, 0); }
-        81.8181818182% { transform: translate(-12px, -12px); }
-        90.9090909091% { transform: translate(0px, -12px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(3) { animation: box5532-3 4s infinite; }
-      @keyframes box5532-4 {
-        9.0909090909% { transform: translate(-12px, 0); }
-        18.1818181818% { transform: translate(-12px, 0); }
-        27.2727272727% { transform: translate(-12px, -12px); }
-        36.3636363636% { transform: translate(0px, -12px); }
-        45.4545454545% { transform: translate(0px, 0px); }
-        54.5454545455% { transform: translate(0px, -12px); }
-        63.6363636364% { transform: translate(0px, -12px); }
-        72.7272727273% { transform: translate(0px, -12px); }
-        81.8181818182% { transform: translate(-12px, -12px); }
-        90.9090909091% { transform: translate(-12px, 0px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(4) { animation: box5532-4 4s infinite; }
-      @keyframes box5532-5 {
-        9.0909090909% { transform: translate(0, 0); }
-        18.1818181818% { transform: translate(0, 0); }
-        27.2727272727% { transform: translate(0, 0); }
-        36.3636363636% { transform: translate(12px, 0); }
-        45.4545454545% { transform: translate(12px, 0); }
-        54.5454545455% { transform: translate(12px, 0); }
-        63.6363636364% { transform: translate(12px, 0); }
-        72.7272727273% { transform: translate(12px, 0); }
-        81.8181818182% { transform: translate(12px, -12px); }
-        90.9090909091% { transform: translate(0px, -12px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(5) { animation: box5532-5 4s infinite; }
-      @keyframes box5532-6 {
-        9.0909090909% { transform: translate(0, 0); }
-        18.1818181818% { transform: translate(-12px, 0); }
-        27.2727272727% { transform: translate(-12px, 0); }
-        36.3636363636% { transform: translate(0px, 0); }
-        45.4545454545% { transform: translate(0px, 0); }
-        54.5454545455% { transform: translate(0px, 0); }
-        63.6363636364% { transform: translate(0px, 0); }
-        72.7272727273% { transform: translate(0px, 12px); }
-        81.8181818182% { transform: translate(-12px, 12px); }
-        90.9090909091% { transform: translate(-12px, 0px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(6) { animation: box5532-6 4s infinite; }
-      @keyframes box5532-7 {
-        9.0909090909% { transform: translate(12px, 0); }
-        18.1818181818% { transform: translate(12px, 0); }
-        27.2727272727% { transform: translate(12px, 0); }
-        36.3636363636% { transform: translate(0px, 0); }
-        45.4545454545% { transform: translate(0px, -12px); }
-        54.5454545455% { transform: translate(12px, -12px); }
-        63.6363636364% { transform: translate(0px, -12px); }
-        72.7272727273% { transform: translate(0px, -12px); }
-        81.8181818182% { transform: translate(0px, 0px); }
-        90.9090909091% { transform: translate(12px, 0px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(7) { animation: box5532-7 4s infinite; }
-      @keyframes box5532-8 {
-        9.0909090909% { transform: translate(0, 0); }
-        18.1818181818% { transform: translate(-12px, 0); }
-        27.2727272727% { transform: translate(-12px, -12px); }
-        36.3636363636% { transform: translate(0px, -12px); }
-        45.4545454545% { transform: translate(0px, -12px); }
-        54.5454545455% { transform: translate(0px, -12px); }
-        63.6363636364% { transform: translate(0px, -12px); }
-        72.7272727273% { transform: translate(0px, -12px); }
-        81.8181818182% { transform: translate(12px, -12px); }
-        90.9090909091% { transform: translate(12px, 0px); }
-        100% { transform: translate(0px, 0px); }
-      }
-      .box5532:nth-child(8) { animation: box5532-8 4s infinite; }
-      @keyframes box5532-9 {
-        9.0909090909% { transform: translate(-12px, 0); }
-        18.1818181818% { transform: translate(-12px, 0); }
-        27.2727272727% { transform: translate(0px, 0); }
-        36.3636363636% { transform: translate(-12px, 0); }
-        45.4545454545% { transform: translate(0px, 0); }
-        54.5454545455% { transform: translate(0px, 0); }
-        63.6363636364% { transform: translate(-12px, 0); }
-        72.7272727273% { transform: translate(-12px, 0); }
-        81.8181818182% { transform: translate(-24px, 0); }
-        90.9090909091% { transform: translate(-12px, 0); }
-        100% { transform: translate(0px, 0); }
-      }
-      .box5532:nth-child(9) { animation: box5532-9 4s infinite; }</style>
-      <g><rect class="box5532" x="13" y="1" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="1" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="13" rx="1" width="10" height="10"/><rect class="box5532" x="1" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="13" y="25" rx="1" width="10" height="10"/><rect class="box5532" x="25" y="25" rx="1" width="10" height="10"/></g>
-    </svg>
-    <p>Conectando con la nube</p>
-  </div>
-</div>
-
-<header>
-  <div style="display:flex; align-items:center; gap:10px;">
-    <a href="/index.html"><img class="logo" src="/assets/martian.png" alt="Videoteca"></a>
+<div class="login-wrap">
+  <div class="login-card">
+    <img class="logo" src="/assets/playing.jpg" alt="Videoteca">
     <h1>Videoteca</h1>
-  </div>
-  <div style="display:flex; align-items:center; gap:6px;">
-    <menu-navegacion activo="index"></menu-navegacion>
-  </div>
-</header>
+    <p class="sub"><i class="ti ti-player-play"></i> Tu cartelera personal te está esperando</p>
 
-<div class="carrusel-wrap" id="carruselWrap">
-  <div class="carrusel-titulo"><i class="ti ti-swipe"></i> Visto últimamente</div>
-  <button class="carrusel-btn prev" id="carruselPrev" title="Anterior"><i class="ti ti-chevron-left"></i></button>
-  <div class="carrusel" id="carrusel"></div>
-  <button class="carrusel-btn next" id="carruselNext" title="Siguiente"><i class="ti ti-chevron-right"></i></button>
-</div>
+    <button type="button" class="btn-google" id="btnGoogle">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Entra con Google
+    </button>
 
-<div class="toolbar">
-  <div class="buscar-wrap">
-    <input type="text" id="buscar" placeholder="Buscar por película o dato...">
-    <button class="btn-limpiar" id="btnLimpiar" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
-  </div>
-  <button class="btn-primario" id="btnAgregar"><i class="ti ti-plus"></i> Agregar</button>
-</div>
-<div class="filtros" id="filtros"></div>
-<div class="contador" id="contador"></div>
-<div id="lista"></div>
+    <div class="login-estado" id="estado"></div>
 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2 id="modalTitulo">Agregar película</h2>
-    <form id="formulario">
-      <input type="hidden" id="fId">
-      <div class="campo">
-        <label for="fClase"><i class="ti ti-category"></i> Clase</label>
-        <select id="fClase">
-          <option value="película">Película</option>
-          <option value="serie">Serie</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="fPelicula"><i class="ti ti-movie"></i> <span id="labelPelicula">Título de la película</span></label>
-        <div class="campo-con-boton">
-          <input type="text" id="fPelicula" required>
-          <button type="button" class="btn-copiar" id="btnCopiarPelicula" title="Copiar título"><i class="ti ti-clipboard"></i></button>
-        </div>
-      </div>
-      <div class="campo">
-        <label for="fPlataforma"><i class="ti ti-device-tv"></i> Plataforma</label>
-        <select id="fPlataforma">
-          <option value="">Sin plataforma</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="fEtiquetas"><i class="ti ti-tags"></i> Etiquetas</label>
-        <div id="etiquetasBotones" class="etiquetas-botones"></div>
-        <input type="hidden" id="fEtiquetas">
-        <div class="buscar-wrap">
-          <input type="text" id="buscarEtiqueta" placeholder="Buscar o agregar otra etiqueta..." autocomplete="off">
-          <button class="btn-limpiar" id="btnLimpiarEtiqueta" title="Limpiar búsqueda"><i class="ti ti-eraser"></i></button>
-        </div>
-        <div id="etiquetasResultados" class="etiquetas-resultados"></div>
-      </div>
-      <div class="campo">
-        <input type="hidden" id="fPoster">
-        <button type="button" class="btn-secundario" id="btnEliminarPoster"><i class="ti ti-trash"></i> Eliminar poster</button>
-      </div>
-      <div class="campo">
-        <label for="fDato"><i class="ti ti-info-circle"></i> Información adicional</label>
-        <input type="text" id="fDato">
-      </div>
-      <div class="campo">
-        <label for="fLink"><i class="ti ti-link"></i> Link</label>
-        <input type="text" id="fLink" placeholder="https://...">
-      </div>
-      <div class="campo">
-        <label for="fVisto"><i class="ti ti-eye"></i> Visto</label>
-        <select id="fVisto">
-          <option>Visto</option>
-          <option>Falta ver</option>
-          <option>Ver otra vez</option>
-          <option>Urgente</option>
-          <option>Viendo</option>
-        </select>
-      </div>
-      <div class="campo">
-        <label for="fNotaSlider"><i class="ti ti-star"></i> Calificación <span class="nota-label" id="notaLabel">Sin calificar</span></label>
-        <input type="hidden" id="fNota">
-        <div class="nota-slider-wrap">
-          <input type="range" id="fNotaSlider" min="0" max="5" step="0.1" value="2.5">
-          <button type="button" class="btn-limpiar-nota" id="btnLimpiarNota" title="Borrar calificación"><i class="ti ti-eraser"></i></button>
-        </div>
-      </div>
-      <div class="campo">
-        <label for="fAnio"><i class="ti ti-calendar"></i> Año</label>
-        <input type="number" id="fAnio" min="1888" max="2100" step="1">
-      </div>
-      <div class="campo" style="display:flex; gap:20px; align-items:center">
-        <div style="flex:1">
-          <label for="fRecomendable"><i class="ti ti-thumb-up"></i> Yo recomiendo</label>
-          <div class="switch">
-            <input type="checkbox" id="fRecomendable">
-            <span class="pista"></span>
-            <span class="perilla"></span>
-          </div>
-        </div>
-        <div style="flex:1">
-          <label for="fRecomiendan"><i class="ti ti-thumb-up"></i> Me recomiendan</label>
-          <div class="switch">
-            <input type="checkbox" id="fRecomiendan">
-            <span class="pista"></span>
-            <span class="perilla"></span>
-          </div>
-        </div>
-      </div>
-      <div class="modal-acciones">
-        <button type="button" class="btn-secundario btn-volver" id="btnCancelar"><i class="ti ti-arrow-left"></i> Volver</button>
-        <button type="submit" class="btn-primario" id="btnGuardar"><i class="ti ti-device-floppy"></i> Guardar</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div class="overlay" id="overlayDetalle">
-  <div class="modal modal-detalle">
-    <div id="dPoster">
-      <button type="button" class="btn-buscar-portada" id="btnBuscarPortada"><i class="ti ti-photo-search"></i> Buscar portada</button>
-    </div>
-    <div class="titulo-centrado">
-      <div class="titulo" id="dPelicula"></div>
-      <button type="button" class="btn-copiar" id="btnCopiar" title="Copiar título"><i class="ti ti-clipboard"></i></button>
-    </div>
-    <div class="estado-centrado" id="dVisto"></div>
-    <div class="etiquetas-detalle" id="dEtiquetasDetalle"></div>
-    <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
-    <div class="detalle-fila" id="dLinkFila" style="display:none"><span class="etiqueta">Link</span><span class="valor"><a class="btn-ver-link" id="dLink" href="#" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Click para Ver</a></span></div>
-    <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
-    <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
-    <div class="recomendada-centrado" id="dRecomendableFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></div>
-    <div class="recomendada-centrado" id="dRecomiendanFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Me recomiendan</span></div>
-    <div class="modal-acciones">
-      <button type="button" class="btn-secundario btn-volver" id="btnCerrarDetalle"><i class="ti ti-arrow-left"></i> Volver</button>
-      <button type="button" class="btn-primario" id="btnEditarDesdeDetalle"><i class="ti ti-pencil"></i> Editar</button>
+    <div class="login-nota">
+      <div class="login-version"><i class="ti ti-tag"></i> Versión <span id="appVersion"></span></div>
+      <div class="login-credito">Distribuido por: <br/> Carlos Pariona · <a href="https://infocatsoluciones.com" target="_blank" rel="noopener">https://infocatsoluciones.com</a></div>
     </div>
   </div>
 </div>
 
-<div class="overlay" id="overlayAleatorio">
-  <div class="modal modal-aleatorio">
-    <h2><i class="ti ti-dice-5"></i> Película aleatoria</h2>
-    <div class="alea-busqueda" id="aleaBusqueda">
-      <img id="aleaDado" src="/assets/dice_1.png" alt="Dado">
-      <span><i class="ti ti-player-track-next"></i> Buscando...</span>
-    </div>
-    <div class="alea-resultado" id="aleaResultado"></div>
-    <div class="modal-acciones">
-      <button type="button" class="btn-primario" id="btnAleaOtra" style="display:none"><i class="ti ti-dice-5"></i> Vamos, de nuevo</button>
-      <button type="button" class="btn-primario" id="btnAleaDetalle" style="display:none"><i class="ti ti-eye"></i> Ver detalles</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="overlayPoster">
-  <div class="modal modal-poster">
-    <h2>Elige un póster</h2>
-    <div id="posterGrid" class="grid-poster"></div>
-    <div class="modal-acciones">
-      <button type="button" class="btn-secundario btn-volver" id="btnCerrarPoster"><i class="ti ti-arrow-left"></i> Volver</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<button id="btnAleatorio" title="Película aleatoria"><i class="ti ti-dice-5"></i></button>
-<button id="btnSubir" title="Ir al inicio"><i class="ti ti-chevron-up"></i></button>
+<script>
+  // Registro del service worker (para PWA/offline)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
+</script>
 
 <script type="module">
-  const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
-  const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
-  const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
+  // ---------------------------------------------------------------------------
+  // Autenticación OAuth2 con PocketBase usando SOLO la API REST (/api).
+  // No se descarga ni se importa el SDK.
+  //
+  // Flujo (verificado contra el servidor):
+  //   1. GET  /api/collections/users/auth-methods  -> authURL, codeVerifier, state
+  //   2. GET  /api/realtime (SSE)                  -> event PB_CONNECT { clientId }
+  //   3. POST /api/realtime { clientId, subscriptions:["@oauth2"] }
+  //   4. Abrir popup a authURL con state=clientId y redirect_uri = /api/oauth2-redirect
+  //   5. Google -> /api/oauth2-redirect -> PocketBase emite event @oauth2 { state, code }
+  //   6. POST /api/collections/users/auth-with-oauth2 { provider, code, codeVerifier, redirectURL }
+  // ---------------------------------------------------------------------------
 
-  const TMDB_TOKEN = import.meta.env.VITE_API_TMDB || '';
+  const PB = 'https://pb.infocatsoluciones.com';
+  const COLECCION = 'users';
+  const PROVIDER = 'google';
+  const CLAVE_SESION = 'pb_auth';
+  const REDIRECT_URL = PB + '/api/oauth2-redirect';
 
-  const $lista = document.getElementById('lista');
-  const $buscar = document.getElementById('buscar');
-  const $contador = document.getElementById('contador');
-  const $filtros = document.getElementById('filtros');
-  const $overlay = document.getElementById('overlay');
-  const $formulario = document.getElementById('formulario');
-  const $modalTitulo = document.getElementById('modalTitulo');
-  const $toast = document.getElementById('toast');
-  const $btnSubir = document.getElementById('btnSubir');
-  const $overlayDetalle = document.getElementById('overlayDetalle');
-  const $dPoster = document.getElementById('dPoster');
-  const $dPelicula = document.getElementById('dPelicula');
-  const $btnCopiar = document.getElementById('btnCopiar');
-  const $dVisto = document.getElementById('dVisto');
-  const $dDato = document.getElementById('dDato');
-  const $dLinkFila = document.getElementById('dLinkFila');
-  const $dLink = document.getElementById('dLink');
-  const $dPlataformaFila = document.getElementById('dPlataformaFila');
-  const $dPlataforma = document.getElementById('dPlataforma');
-  const $dEtiquetasDetalle = document.getElementById('dEtiquetasDetalle');
-  const $dNota = document.getElementById('dNota');
-  const $dRecomendableFila = document.getElementById('dRecomendableFila');
-  const $dRecomiendanFila = document.getElementById('dRecomiendanFila');
-  const $overlayAleatorio = document.getElementById('overlayAleatorio');
-  const $aleaBusqueda = document.getElementById('aleaBusqueda');
-  const $aleaResultado = document.getElementById('aleaResultado');
-  const $btnAleaDetalle = document.getElementById('btnAleaDetalle');
-  const $btnAleaOtra = document.getElementById('btnAleaOtra');
-  const $aleaDado = document.getElementById('aleaDado');
-  const $overlayPoster = document.getElementById('overlayPoster');
-  const $posterGrid = document.getElementById('posterGrid');
-  const $carrusel = document.getElementById('carrusel');
-  const $carruselWrap = document.getElementById('carruselWrap');
-  const $etiquetasBotones = document.getElementById('etiquetasBotones');
-  const $buscarEtiqueta = document.getElementById('buscarEtiqueta');
-  const $etiquetasResultados = document.getElementById('etiquetasResultados');
-  const $fNotaSlider = document.getElementById('fNotaSlider');
-  const $notaLabel = document.getElementById('notaLabel');
-  const $btnLimpiarNota = document.getElementById('btnLimpiarNota');
+  const $btn = document.getElementById('btnGoogle');
+  const $estado = document.getElementById('estado');
 
-  let peliculas = [];
-  let plataformas = [];
-  let etiquetas = [];
-  let etiquetasSeleccionadas = [];
-  let filtro = '';
-  let filtroVisto = '';
-  let filtroClase = '';
-  let filtroRecomendado = '';
-  let filtroRecomendadoMe = '';
-  let modo = 'crear';
-  let idEditando = null;
-  let detalleActual = null;
-  let posterRegistro = null;
-  let aleaActual = null;
-  let aleaIntervalo = null;
-  let aleaTimeout = null;
-  let aleaCara = 1;
-  // modo de vista y carga infinita
-  let modoVista = localStorage.getItem('modoVista') === 'titulos' ? 'titulos' : 'portada';
-  let notaTocada = false;
-  const LOTE = 20;
-  let visiblesMostrados = LOTE;
-  let cargandoLote = false;
+  // Versión de la app (inyectada desde package.json en el build)
+  document.getElementById('appVersion').textContent = __APP_VERSION__;
 
-  function normalizar(s) {
-    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
+  let ocupado = false;
 
-  function capitalizar(s) {
-    if (!s) return s;
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  function iconoNota(nota) {
-    const n = Number(nota);
-    if (n >= 4) return 'ti ti-star-filled llena';
-    if (n >= 3) return 'ti ti-star';
-    return 'ti ti-star-half';
-  }
-
-  function dadoSrc(cara) {
-    const oscuro = document.documentElement.classList.contains('tema-oscuro');
-    return oscuro ? '/assets/dice_' + cara + '_blanco.png' : '/assets/dice_' + cara + '.png';
-  }
-
-  function nombrePlataforma(p) {
-    return p.plataforma.split(' ').map(capitalizar).join(' ');
-  }
-
-  async function cargarPlataformas() {
-    const res = await fetch(BASE_PLATAFORMAS + '?perPage=200');
-    if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
-    const data = await res.json();
-    plataformas = (data.items || []).sort((a, b) => nombrePlataforma(a).localeCompare(nombrePlataforma(b), 'es'));
-    const $sel = document.getElementById('fPlataforma');
-    $sel.innerHTML = '<option value="">Sin plataforma</option>';
-    for (const p of plataformas) {
-      const op = document.createElement('option');
-      op.value = p.id;
-      op.textContent = nombrePlataforma(p);
-      $sel.appendChild(op);
-    }
-  }
-
-  const ETIQUETAS_INICIALES = [
-    { id: 'r155db6d7ee3325', etiqueta: 'Acción' },
-    { id: 'rce032e27c05934', etiqueta: 'Comedia' },
-    { id: 'r269e514b3dbd97', etiqueta: 'Drama' },
-    { id: 'r31957a1bdecd8a', etiqueta: 'Romance' },
-    { id: 'r71d39f65338ae0', etiqueta: 'Suspenso' },
-    { id: 'raa6f9b3c520f73', etiqueta: 'Terror' },
-    { id: 'r5fc85d37ea4dbe', etiqueta: 'Ciencia ficción' },
-    { id: 'r42d42a784208a3', etiqueta: 'Fantasía' },
-    { id: 'r61730636663d7f', etiqueta: 'Documental' },
-    { id: 'rbc311f12c2ea17', etiqueta: 'Animación' },
-    { id: 'r299a6f8a3ce219', etiqueta: 'Aventura' },
-    { id: 'rbae84157ae17a8', etiqueta: 'Clásico' },
-    { id: 're61a29abceac78', etiqueta: 'Estreno' },
-    { id: 'r1f91502e3a16fc', etiqueta: 'Oscar' },
-    { id: 'rcbab36bd777a2d', etiqueta: 'Familiar' }
-  ];
-
-  async function cargarEtiquetas() {
-    // Solo construye los botones base (las 15 iniciales); el resto se busca por URL al editar
-    etiquetas = ETIQUETAS_INICIALES;
-    renderEtiquetasBotones();
-  }
-
-  function renderEtiquetasBotones() {
-    $etiquetasBotones.innerHTML = '';
-    // las seleccionadas que no estén en la lista base se agregan al final para poder desactivarlas
-    const extras = etiquetasSeleccionadas
-      .map(id => etiquetas.find(e => e.id === id))
-      .filter(Boolean);
-    const todas = ETIQUETAS_INICIALES.concat(
-      extras.filter(e => !ETIQUETAS_INICIALES.some(x => x.id === e.id))
-    );
-    for (const e of todas) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'etiqueta-btn' + (etiquetasSeleccionadas.includes(e.id) ? ' activa' : '');
-      btn.textContent = e.etiqueta;
-      btn.onclick = () => {
-        const idx = etiquetasSeleccionadas.indexOf(e.id);
-        if (idx >= 0) {
-          etiquetasSeleccionadas.splice(idx, 1);
-        } else {
-          etiquetasSeleccionadas.push(e.id);
-        }
-        $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
-        renderEtiquetasBotones();
-        renderEtiquetasResultados();
-      };
-      $etiquetasBotones.appendChild(btn);
-    }
-  }
-
-  async function renderEtiquetasResultados() {
-    const q = normalizar($buscarEtiqueta.value.trim());
-    $etiquetasResultados.innerHTML = '';
-    if (!q) return;
+  function tokenValido(sesion) {
+    if (!sesion || !sesion.token) return false;
     try {
-      // busca en el backend las etiquetas que coinciden con el término (nombre o alternativo)
-      const termino = q.replace(/"/g, '');
-      const filtro = '(etiqueta ~ "' + termino + '" || alternativo ~ "' + termino + '")';
-      const res = await fetch(BASE_ETIQUETAS + '?perPage=8&sort=etiqueta&filter=' + encodeURIComponent(filtro));
-      if (!res.ok) return;
-      const data = await res.json();
-      const candidatas = (data.items || []).filter(e => !etiquetasSeleccionadas.includes(e.id));
-      for (const e of candidatas.slice(0, 6)) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = e.etiqueta;
-        btn.onclick = () => {
-          etiquetasSeleccionadas.push(e.id);
-          if (!etiquetas.some(x => x.id === e.id)) etiquetas.push(e);
-          $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
-          $buscarEtiqueta.value = '';
-          $etiquetasResultados.innerHTML = '';
-          renderEtiquetasBotones();
-        };
-        $etiquetasResultados.appendChild(btn);
-      }
-    } catch (_) {}
-  }
-
-  function buscarEtiquetaDebounce() {
-    clearTimeout(buscarEtiquetaDebounce._t);
-    buscarEtiquetaDebounce._t = setTimeout(renderEtiquetasResultados, 300);
-  }
-
-  async function api(path = '', options = {}) {
-    const res = await fetch(BASE + path, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options
-    });
-    if (!res.ok) {
-      let msg = 'Error ' + res.status;
-      try {
-        const e = await res.json();
-        msg = e.message || msg;
-      } catch (_) {}
-      throw new Error(msg);
-    }
-    return res.status === 204 ? null : res.json();
-  }
-
-  async function cargar() {
-    $carruselWrap.style.display = 'none';
-    let page = 1;
-    let items = [];
-    while (true) {
-      const data = await api('?page=' + page + '&perPage=500&sort=-created&expand=etiquetas&filter=' + encodeURIComponent('(clase != "juego" && clase != "libro")'));
-      items = items.concat(data.items);
-      if (page >= data.totalPages) break;
-      page++;
-    }
-    peliculas = items;
-    render();
-    cargarCarrusel();
-    const $loader = document.getElementById('loader');
-    $loader.classList.add('hidden');
-    setTimeout(() => { $loader.style.display = 'none'; }, 500);
-  }
-
-  async function cargarCarrusel() {
-    try {
-      const data = await api('?perPage=10&expand=etiquetas&filter=' + encodeURIComponent('(visto="Visto" || visto="Ver otra vez") && (clase != "juego" && clase != "libro")') + '&sort=-updated');
-      $carrusel.innerHTML = '';
-      if (!data.items || !data.items.length) {
-        $carruselWrap.style.display = 'none';
-        return;
-      }
-			
-      $carruselWrap.style.display = '';
-      for (const p of data.items) {
-        const div = document.createElement('div');
-        div.className = 'carrusel-item';
-        const img = document.createElement('img');
-        img.src = p.poster ? 'https://image.tmdb.org/t/p/w500/' + p.poster : '/assets/want.jpg';
-        img.alt = p.pelicula;
-        img.loading = 'lazy';
-        div.appendChild(img);
-        div.onclick = () => abrirDetalle(p);
-        $carrusel.appendChild(div);
-      }
-      iniciarAutoScroll();
+      const payload = JSON.parse(atob(sesion.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return !payload.exp || payload.exp * 1000 > Date.now();
     } catch (_) {
-      $carruselWrap.style.display = 'none';
+      return false;
     }
   }
 
-  let carruselTimer = null;
-  function tarjetaVisible() {
-    return window.innerWidth <= 640 ? 3 : 5;
-  }
-  function pasoCarrusel() {
-    // ancho real de una tarjeta + su gap, para que el destino coincida con el inicio de la siguiente
-    const primera = $carrusel.querySelector('.carrusel-item');
-    if (!primera) return 1;
-    const gap = 10;
-    return primera.offsetWidth + gap;
-  }
-  function moverCarrusel(dir) {
-    const paso = pasoCarrusel();
-    const maxScroll = $carrusel.scrollWidth - $carrusel.clientWidth;
-    let destino = Math.min(Math.max($carrusel.scrollLeft + dir * paso, 0), maxScroll);
-    $carrusel.scrollTo({ left: destino, behavior: 'smooth' });
-    // reinicia el temporizador para que no avance justo después de navegar
-    clearInterval(carruselTimer);
-    carruselTimer = setInterval(autoScroll, 6000);
-  }
-  function autoScroll() {
-    const paso = pasoCarrusel();
-    const maxScroll = $carrusel.scrollWidth - $carrusel.clientWidth;
-    const proximo = $carrusel.scrollLeft + paso;
-    if (proximo >= maxScroll - 1) {
-      $carrusel.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      $carrusel.scrollBy({ left: paso, behavior: 'smooth' });
-    }
-  }
-  function iniciarAutoScroll() {
-    clearInterval(carruselTimer);
-    carruselTimer = setInterval(autoScroll, 6000);
-  }
-  window.addEventListener('resize', () => {
-    clearInterval(carruselTimer);
-    if ($carruselWrap.style.display !== 'none') iniciarAutoScroll();
-  });
-
-  function badge(visto) {
-    const cls = visto === 'Visto' ? 'Visto'
-      : visto === 'Falta ver' ? 'Falta'
-      : visto === 'Ver otra vez' ? 'Ver'
-      : visto === 'Viendo' ? 'Viendo'
-      : 'Urgente';
-    let icono = '';
-    if (visto === 'Falta ver') icono = '<i class="ti ti-circle-plus-2"></i> ';
-    else if (visto === 'Visto' || visto === 'Ver otra vez' || visto === 'Viendo') icono = '<i class="ti ti-checks"></i> ';
-    return '<span class="badge ' + cls + '">' + icono + visto + '</span>';
+  function leerSesion() {
+    try { return JSON.parse(localStorage.getItem(CLAVE_SESION) || 'null'); } catch (_) { return null; }
   }
 
-  function badgeClase(clase) {
-    const esSerie = (clase || '').toLowerCase() === 'serie';
-    const icono = esSerie ? 'ti ti-armchair' : 'ti ti-device-tv';
-    const texto = esSerie ? 'Serie' : 'Película';
-    return '<span class="badge clase"><i class="' + icono + '"></i> ' + texto + '</span>';
+  function mostrarEstado(html, tipo) {
+    $estado.className = 'login-estado' + (tipo ? ' ' + tipo : '');
+    $estado.innerHTML = html || '';
   }
 
-  function tituloConAnio(p) {
-    const base = capitalizar(p.pelicula);
-    return p.anio ? base + ' (' + p.anio + ')' : base;
+  function conSpinner(texto) {
+    return '<span class="spinner-login"></span><span>' + texto + '</span>';
   }
 
-  function tarjeta(p) {
-    if (modoVista === 'portada') {
-      const div = document.createElement('div');
-      div.className = 'tarjeta portada';
-      const imgSrc = p.poster
-        ? 'https://image.tmdb.org/t/p/w500/' + p.poster
-        : '/assets/want.jpg';
-      div.innerHTML =
-        '<img src="' + imgSrc + '" alt="' + p.pelicula + '" loading="lazy">' +
-        (p.visto === 'Viendo' ? '<span class="cinta-viendo">Viendo</span>' :
-         p.visto === 'Visto' ? '<span class="cinta-viendo">Visto</span>' :
-         (p.visto === 'Ver otra vez' || p.visto === 'Volver a ver') ? '<span class="cinta-viendo">De nuevo</span>' : '') +
-        '<div class="info">' +
-          '<div class="nombre"></div>' +
-          '<div class="meta">' +
-            (p.nota ? '<span class="nota"><i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
-          '</div>' +
-        '</div>' +
-        '<div class="acciones">' +
-          '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
-          '<button class="btn-icono borrar" title="Eliminar"><i class="ti ti-trash"></i></button>' +
-        '</div>';
-      div.querySelector('.nombre').textContent = capitalizar(p.pelicula);
-      div.onclick = () => abrirDetalle(p);
-      div.querySelector('.editar').onclick = (e) => { e.stopPropagation(); abrirEditar(p); };
-      div.querySelector('.borrar').onclick = (e) => { e.stopPropagation(); eliminar(p.id, p.pelicula); };
-      return div;
-    }
-    const div = document.createElement('div');
-    div.className = 'tarjeta';
-    div.innerHTML =
-      '<div class="nombre"></div>' +
-      '<div class="meta">' + badge(p.visto) + badgeClase(p.clase) +
-        (p.dato ? '<span class="dato">' + p.dato + '</span>' : '') +
-        (p.nota ? '<span class="nota">'  + ' <i class="' + iconoNota(Number(p.nota)) + ' estrella"></i> ' + Number(p.nota) + '</span>' : '') +
-      '</div>' +
-      '<div class="acciones">' +
-        '<button class="btn-icono editar" title="Editar"><i class="ti ti-pencil"></i></button>' +
-        '<button class="btn-icono borrar" title="Eliminar"><i class="ti ti-trash"></i></button>' +
-      '</div>';
-    div.querySelector('.nombre').textContent = tituloConAnio(p);
-    div.onclick = () => abrirDetalle(p);
-    div.querySelector('.editar').onclick = (e) => { e.stopPropagation(); abrirEditar(p); };
-    div.querySelector('.borrar').onclick = (e) => { e.stopPropagation(); eliminar(p.id, p.pelicula); };
-    return div;
-  }
+  // --- Paso 2: conexión realtime (SSE) ---------------------------------------
+  function conectarRealtime() {
+    return new Promise((resolve, reject) => {
+      const es = new EventSource(PB + '/api/realtime');
+      const timeout = setTimeout(() => {
+        es.close();
+        reject(new Error('No se pudo conectar con el servidor.'));
+      }, 12000);
 
-  function render() {
-    const q = normalizar(filtro);
-    // Construir lista de visibles con info de match por etiqueta
-    let visiblesInfo = [];
-    let porEtiqueta = 0;
-    for (const p of peliculas) {
-      if (filtroVisto && p.visto !== filtroVisto) continue;
-      if (filtroClase && (p.clase || 'película') !== filtroClase) continue;
-      if (filtroRecomendado === 'si' && !p.recomendable) continue;
-      if (filtroRecomendadoMe === 'si' && !p.recomiendan) continue;
-      if (!q) { visiblesInfo.push({ p, tagMatch: null }); continue; }
-      // buscar en título y dato
-      if (normalizar(p.pelicula).includes(q) || normalizar(p.dato || '').includes(q)) {
-        visiblesInfo.push({ p, tagMatch: null });
-        continue;
-      }
-      // buscar en etiquetas expandidas (nombre y alternativo)
-      const etiquetasExpandidas = (p.expand && Array.isArray(p.expand.etiquetas)) ? p.expand.etiquetas : [];
-      let foundTag = null;
-      for (const e of etiquetasExpandidas) {
-        if (normalizar(e.etiqueta || '').includes(q) || normalizar(e.alternativo || '').includes(q)) { foundTag = e.etiqueta; break; }
-      }
-      if (foundTag) {
-        visiblesInfo.push({ p, tagMatch: foundTag });
-        porEtiqueta++;
-      }
-    }
-    const visibles = visiblesInfo.map(v => v.p);
-    let texto;
-    if (filtroClase === 'película') {
-      texto = visibles.length + ' película' + (visibles.length === 1 ? '' : 's');
-    } else if (filtroClase === 'serie') {
-      texto = visibles.length + ' serie' + (visibles.length === 1 ? '' : 's');
-    } else {
-      texto = visibles.length + ' películas y series';
-    }
-    if (q && porEtiqueta > 0) {
-      texto += ' (' + porEtiqueta + ' por etiqueta)';
-    }
-    $contador.textContent = texto;
-    $lista.classList.toggle('modo-portada', modoVista === 'portada');
-    $lista.innerHTML = '';
-    if (!peliculas.length) {
-      const v = document.createElement('div');
-      v.className = 'carga';
-      v.innerHTML = '<div class="spinner"></div><span>Listando las mejores películas…</span>';
-      $lista.appendChild(v);
-      return;
-    }
-    if (!visibles.length) {
-      const v = document.createElement('div');
-      v.className = 'vacio';
-      v.textContent = 'Sin resultados para "' + filtro + '"';
-      $lista.appendChild(v);
-      return;
-    }
-    if (ordenAZ) {
-      visiblesInfo.sort((a, b) => a.p.pelicula.localeCompare(b.p.pelicula, 'es') * (ordenAZ === 2 ? -1 : 1));
-    }
-    if (ordenAleatorio) {
-      // sortea una sola vez por conjunto de filtros; la carga infinita respeta ese orden
-      const clave = filtro + '|' + filtroVisto + '|' + filtroClase + '|' + filtroRecomendado + '|' + ordenAZ;
-      if (clave !== claveOrden) {
-        for (let i = visiblesInfo.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [visiblesInfo[i], visiblesInfo[j]] = [visiblesInfo[j], visiblesInfo[i]];
+      es.addEventListener('PB_CONNECT', async (ev) => {
+        clearTimeout(timeout);
+        try {
+          const { clientId } = JSON.parse(ev.data);
+          const res = await fetch(PB + '/api/realtime', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId, subscriptions: ['@oauth2'] })
+          });
+          if (!res.ok) throw new Error('No se pudo suscribir al canal de autenticación.');
+          resolve({ es, clientId });
+        } catch (err) {
+          es.close();
+          reject(err);
         }
-        ordenMezclado = visiblesInfo.map(v => v.p.id);
-        claveOrden = clave;
-      } else {
-        const porId = new Map(visiblesInfo.map(v => [v.p.id, v]));
-        visiblesInfo = ordenMezclado
-          .map(id => porId.get(id))
-          .filter(Boolean)
-          .concat(visiblesInfo.filter(v => !ordenMezclado.includes(v.p.id)));
-      }
-    }
-    const aMostrar = visiblesInfo.slice(0, visiblesMostrados);
-    for (const vi of aMostrar) $lista.appendChild(tarjeta(vi.p));
-    if (visibles.length > visiblesMostrados) {
-      const c = document.createElement('div');
-      c.className = 'cargando';
-      c.textContent = 'Cargando más...';
-      c.id = 'indicadorCarga';
-      $lista.appendChild(c);
-    }
-  }
-
-  function mostrarToast(msg) {
-    $toast.innerHTML = '<i class="ti ti-location-check"></i>' + msg;
-    $toast.classList.add('visible');
-    clearTimeout(mostrarToast._t);
-    mostrarToast._t = setTimeout(() => $toast.classList.remove('visible'), 2500);
-  }
-
-  function abrirOverlay($el) {
-    $el.style.display = 'flex';
-    $el.offsetHeight; // forzar reflow
-    $el.classList.add('abierto', 'animado');
-  }
-  function cerrarOverlay($el) {
-    $el.classList.remove('animado');
-    setTimeout(() => {
-      $el.classList.remove('abierto');
-      $el.style.display = '';
-    }, 250);
-  }
-
-  function abrirModal() { abrirOverlay($overlay); }
-  function cerrarModal() { cerrarOverlay($overlay); }
-
-  function abrirDetalle(p) {
-    detalleActual = p;
-    $dPelicula.textContent = tituloConAnio(p);
-    $dVisto.innerHTML = badgeClase(p.clase) + badge(p.visto);
-    $dDato.textContent = p.dato ? p.dato : '—';
-    const link = (p.link || '').trim();
-    if (link) {
-      $dLink.href = link;
-      $dLinkFila.style.display = '';
-    } else {
-      $dLink.href = '#';
-      $dLinkFila.style.display = 'none';
-    }
-    const plat = plataformas.find(x => String(x.id) === String(p.plataforma));
-    if (plat && plat.logo) {
-      $dPlataforma.innerHTML = '<span class="plataforma-tooltip-wrap"><span class="plataforma-tooltip">' + nombrePlataforma(plat) + '</span><img class="logo-plataforma" src="/logos/' + plat.logo + '" alt="' + nombrePlataforma(plat) + '"></span>';
-      $dPlataformaFila.style.display = '';
-    } else {
-      $dPlataforma.innerHTML = '';
-      $dPlataformaFila.style.display = 'none';
-    }
-    const notaNum = Number(p.nota);
-    $dNota.innerHTML = (!isNaN(notaNum) && notaNum > 0)
-      ? '<i class="' + iconoNota(notaNum) + ' estrella"></i> ' + notaNum
-      : '—';
-    const idsEtiquetas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
-    if (idsEtiquetas.length) {
-      // usa el expand del backend si está disponible, sino el catálogo local (15 iniciales + agregadas)
-      const expandidas = (p.expand && Array.isArray(p.expand.etiquetas)) ? p.expand.etiquetas : [];
-      const nombres = idsEtiquetas.map(id => {
-        const ex = expandidas.find(x => x.id === id);
-        if (ex) return ex.etiqueta;
-        const e = etiquetas.find(x => x.id === id);
-        return e ? e.etiqueta : id;
       });
-      $dEtiquetasDetalle.innerHTML = nombres.map(n => '<span>' + n + '</span>').join('<span class="separador"> · </span>');
-      $dEtiquetasDetalle.style.display = '';
-    } else {
-      $dEtiquetasDetalle.textContent = '';
-      $dEtiquetasDetalle.style.display = 'none';
-    }
-    $dRecomendableFila.style.display = p.recomendable ? '' : 'none';
-    $dRecomiendanFila.style.display = p.recomiendan ? '' : 'none';
-    mostrarPoster(p.poster);
-    abrirOverlay($overlayDetalle);
-  }
-
-  function mostrarPoster(poster) {
-    $dPoster.innerHTML = '';
-    $dPoster.className = '';
-    if (!poster) {
-      $dPoster.className = 'sin-poster';
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn-buscar-portada';
-      btn.id = 'btnBuscarPortada';
-      btn.innerHTML = '<i class="ti ti-photo-search"></i> Buscar portada';
-      btn.onclick = buscarPortadaDesdeDetalle;
-      $dPoster.appendChild(btn);
-      return;
-    }
-    $dPoster.className = 'tiene-poster';
-    const img = document.createElement('img');
-    img.src = 'https://image.tmdb.org/t/p/w500/' + poster;
-    img.alt = 'Póster';
-    img.onerror = () => { $dPoster.innerHTML = ''; $dPoster.className = ''; };
-    $dPoster.appendChild(img);
-  }
-
-  function cerrarDetalle() { cerrarOverlay($overlayDetalle); }
-
-  const COMPLETADOS_PELICULAS = ['Visto', 'Ver otra vez'];
-  const PENDIENTES_PELICULAS = ['Falta ver', 'Urgente', 'Viendo'];
-
-  function esCandidatoAleatorio(p) {
-    const modo = localStorage.getItem('modoAleatorio') || 'pendientes';
-    if (modo === 'ambos') return COMPLETADOS_PELICULAS.includes(p.visto) || PENDIENTES_PELICULAS.includes(p.visto);
-    if (modo === 'completados') return COMPLETADOS_PELICULAS.includes(p.visto);
-    return PENDIENTES_PELICULAS.includes(p.visto);
-  }
-
-  function abrirAleatorio() {
-    const candidatas = peliculas.filter(esCandidatoAleatorio);
-    aleaActual = null;
-    $btnAleaDetalle.style.display = 'none';
-    $btnAleaOtra.style.display = 'none';
-    $aleaResultado.classList.remove('visible');
-    $aleaResultado.innerHTML = '';
-    $aleaBusqueda.style.display = 'flex';
-    if (!candidatas.length) {
-      $aleaBusqueda.innerHTML = '<i class="ti ti-alert-triangle"></i> No hay películas pendientes';
-      abrirOverlay($overlayAleatorio);
-      return;
-    }
-    abrirOverlay($overlayAleatorio);
-    // Cancelar cualquier animación anterior
-    clearInterval(aleaIntervalo);
-    clearTimeout(aleaTimeout);
-    aleaCara = 1;
-    $aleaDado.src = dadoSrc(1);
-    aleaIntervalo = setInterval(() => {
-      aleaCara = aleaCara === 1 ? 2 : 1;
-      $aleaDado.src = dadoSrc(aleaCara);
-    }, 250);
-    // efecto de búsqueda por 1 segundo, luego elige al azar
-    aleaTimeout = setTimeout(() => {
-      clearInterval(aleaIntervalo);
-      aleaIntervalo = null;
-      aleaTimeout = null;
-      const elegida = candidatas[Math.floor(Math.random() * candidatas.length)];
-      aleaActual = elegida;
-      $aleaBusqueda.style.display = 'none';
-      $aleaResultado.innerHTML = '';
-      const img = document.createElement('img');
-      img.className = 'alea-img';
-      img.src = elegida.poster ? 'https://image.tmdb.org/t/p/w500/' + elegida.poster : '/assets/want.jpg';
-      img.alt = 'Película';
-      img.style.cursor = 'pointer';
-      img.onclick = () => {
-        cerrarAleatorio();
-        setTimeout(() => { abrirDetalle(elegida); }, 250);
-      };
-      $aleaResultado.appendChild(img);
-      const hora = document.createElement('div');
-      hora.className = 'alea-hora';
-      hora.textContent = 'Es hora de ver...';
-      $aleaResultado.appendChild(hora);
-      const filaTitulo = document.createElement('div');
-      filaTitulo.className = 'alea-titulo-fila';
-      const titulo = document.createElement('div');
-      titulo.className = 'alea-titulo';
-      titulo.textContent = tituloConAnio(elegida);
-      filaTitulo.appendChild(titulo);
-      const btnCopiar = document.createElement('button');
-      btnCopiar.type = 'button';
-      btnCopiar.className = 'btn-copiar';
-      btnCopiar.title = 'Copiar título';
-      btnCopiar.innerHTML = '<i class="ti ti-clipboard"></i>';
-      btnCopiar.onclick = () => {
-        navigator.clipboard.writeText(elegida.pelicula).then(() => {
-          mostrarToast('Título copiado');
-        }).catch(() => {
-          mostrarToast('Error al copiar');
-        });
-      };
-      filaTitulo.appendChild(btnCopiar);
-      $aleaResultado.appendChild(filaTitulo);
-      const meta = document.createElement('div');
-      meta.className = 'alea-meta';
-      meta.innerHTML = badge(elegida.visto) + badgeClase(elegida.clase);
-      $aleaResultado.appendChild(meta);
-      $aleaResultado.classList.add('visible');
-      $btnAleaDetalle.style.display = '';
-      $btnAleaOtra.style.display = '';
-    }, 1000);
-  }
-
-  function cerrarAleatorio() {
-    clearInterval(aleaIntervalo);
-    clearTimeout(aleaTimeout);
-    aleaIntervalo = null;
-    aleaTimeout = null;
-    cerrarOverlay($overlayAleatorio);
-  }
-
-  function actualizarLabelPelicula() {
-    const tipo = $formulario.fClase.value === 'serie' ? 'serie' : 'película';
-    document.getElementById('labelPelicula').textContent = 'Título de la ' + tipo;
-  }
-
-  function aplicarNotaSlider() {
-    if (!notaTocada) return;
-    const val = $fNotaSlider.value;
-    $formulario.fNota.value = val;
-    $notaLabel.innerHTML = '(<i class="' + iconoNota(val) + '"></i> ' + val + ')';
-  }
-
-  function sincronizarNotaSlider(valor) {
-    notaTocada = false;
-    $formulario.fNota.value = valor || '';
-    const n = Number(valor);
-    if (valor !== '' && valor != null && !isNaN(n) && n > 0) {
-      $fNotaSlider.value = String(n);
-      $notaLabel.innerHTML = '(<i class="' + iconoNota(n) + '"></i> ' + n + ')';
-    } else {
-      $fNotaSlider.value = '2.5';
-      $notaLabel.textContent = 'Sin calificar';
-    }
-  }
-
-  function abrirCrear() {
-    modo = 'crear';
-    idEditando = null;
-    $formulario.reset();
-    $formulario.fPoster.value = '';
-    $formulario.fClase.value = 'película';
-    $formulario.fVisto.value = 'Falta ver';
-    $formulario.fPlataforma.value = '';
-    sincronizarNotaSlider('');
-    $formulario.fRecomendable.checked = false;
-    $formulario.fRecomiendan.checked = false;
-    etiquetasSeleccionadas = [];
-    $formulario.fEtiquetas.value = '';
-    $buscarEtiqueta.value = '';
-    $etiquetasResultados.innerHTML = '';
-    renderEtiquetasBotones();
-    document.getElementById('btnEliminarPoster').style.display = 'none';
-    actualizarLabelPelicula();
-    $modalTitulo.textContent = 'Agregar película';
-    abrirModal();
-    $formulario.fPelicula.focus();
-  }
-
-  function abrirEditar(p) {
-    modo = 'editar';
-    idEditando = p.id;
-    $formulario.fId.value = p.id;
-    $formulario.fPelicula.value = p.pelicula;
-    $formulario.fPoster.value = p.poster || '';
-    $formulario.fClase.value = (p.clase || 'película').toLowerCase() === 'serie' ? 'serie' : 'película';
-    $formulario.fVisto.value = p.visto;
-    $formulario.fPlataforma.value = p.plataforma || '';
-    $formulario.fDato.value = p.dato || '';
-    $formulario.fLink.value = p.link || '';
-    sincronizarNotaSlider(p.nota);
-    $formulario.fAnio.value = p.anio || '';
-    $formulario.fRecomendable.checked = !!p.recomendable;
-    $formulario.fRecomiendan.checked = !!p.recomiendan;
-    etiquetasSeleccionadas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
-    // agrega al catálogo local las etiquetas expandidas del registro para poder mostrar sus nombres
-    if (p.expand && Array.isArray(p.expand.etiquetas)) {
-      for (const ex of p.expand.etiquetas) {
-        if (!etiquetas.some(x => x.id === ex.id)) etiquetas.push(ex);
-      }
-    }
-    $formulario.fEtiquetas.value = etiquetasSeleccionadas.join(',');
-    $buscarEtiqueta.value = '';
-    $etiquetasResultados.innerHTML = '';
-    renderEtiquetasBotones();
-    document.getElementById('btnEliminarPoster').style.display = '';
-    actualizarLabelPelicula();
-    $modalTitulo.textContent = 'Editar película';
-    abrirModal();
-    $formulario.fPelicula.focus();
-  }
-
-  async function buscarPosterTMDb(titulo, esSerie = false) {
-    if (!TMDB_TOKEN) throw new Error('Token TMDB no configurado');
-    const endpoint = esSerie ? 'search/tv' : 'search/movie';
-    const url = 'https://api.themoviedb.org/3/' + endpoint + '?query=' +
-      encodeURIComponent(titulo) +
-      '&include_adult=false&language=es&page=1';
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: 'Bearer ' + TMDB_TOKEN
-      }
     });
-    if (!res.ok) throw new Error('Error TMDB ' + res.status);
-    return res.json();
   }
 
-  async function buscarPortadaDesdeDetalle() {
-    if (!detalleActual) return;
-    try {
-      const esSerie = (detalleActual.clase || '').toLowerCase() === 'serie';
-      const data = await buscarPosterTMDb(detalleActual.pelicula, esSerie);
-      if (!data) return;
-      if (data.total_results === 1 && data.results && data.results.length === 1) {
-        const poster = data.results[0].poster_path;
-        if (poster) {
-          await api('/' + detalleActual.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
-          detalleActual.poster = poster;
-          mostrarToast('Portada actualizada');
-          await cargar();
-          cerrarOverlay($overlayDetalle);
-          setTimeout(() => abrirDetalle(detalleActual), 250);
+  // --- Paso 5: esperar el código que envía PocketBase ------------------------
+  function esperarCodigo(es, clientId, popup) {
+    return new Promise((resolve, reject) => {
+      const terminar = (fn, valor) => {
+        limpiar();
+        fn(valor);
+      };
+      const alRecibir = (ev) => {
+        let datos;
+        try { datos = JSON.parse(ev.data); } catch (_) { return; }
+        if (!datos || datos.state !== clientId) return;
+        if (datos.error || !datos.code) {
+          terminar(reject, new Error('cancelado'));
         } else {
-          $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
+          terminar(resolve, datos.code);
         }
-      } else if (data.results && data.results.length > 1) {
-        abrirSelectorPoster(data.results, detalleActual);
-      } else {
-        $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
-      }
-    } catch (err) {
-      $dPoster.innerHTML = '<div class="sin-poster"><i class="ti ti-photo-off"></i> No se encontró portada</div>';
-    }
-  }
-
-  function abrirSelectorPoster(results, registro) {
-    posterRegistro = registro;
-    $posterGrid.innerHTML = '';
-    const primeros = results.slice(0, 12);
-    const conPoster = primeros.filter(r => r.poster_path);
-    if (!conPoster.length) {
-      const v = document.createElement('div');
-      v.className = 'sin-poster';
-      v.textContent = 'Sin pósters disponibles';
-      $posterGrid.appendChild(v);
-    } else {
-      for (const r of conPoster) {
-        const img = document.createElement('img');
-        img.src = 'https://image.tmdb.org/t/p/w500/' + r.poster_path;
-        img.alt = r.title || 'Póster';
-        img.loading = 'lazy';
-        img.onclick = async () => {
-          try {
-            await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster: r.poster_path }) });
-            registro.poster = r.poster_path;
-            mostrarToast('Póster guardado');
-            cerrarOverlay($overlayPoster);
-            await cargar();
-            setTimeout(() => abrirDetalle(registro), 250);
-          } catch (err) {
-            mostrarToast('Error guardando póster: ' + err.message);
-          }
-        };
-        $posterGrid.appendChild(img);
-      }
-    }
-    abrirOverlay($overlayPoster);
-  }
-
-  function cerrarSelectorPoster() { cerrarOverlay($overlayPoster); }
-
-  async function guardar(e) {
-    e.preventDefault();
-    const body = {
-      pelicula: capitalizar($formulario.fPelicula.value.trim()),
-      poster: $formulario.fPoster.value.trim(),
-      clase: $formulario.fClase.value,
-      plataforma: $formulario.fPlataforma.value,
-      etiquetas: etiquetasSeleccionadas,
-      visto: $formulario.fVisto.value,
-      dato: $formulario.fDato.value.trim(),
-      link: $formulario.fLink.value.trim(),
-      nota: $formulario.fNota.value.trim() || '',
-      anio: $formulario.fAnio.value.trim(),
-      recomendable: $formulario.fRecomendable.checked,
-      recomiendan: $formulario.fRecomiendan.checked
-    };
-    try {
-      let registro;
-      if (modo === 'crear') {
-        registro = await api('', { method: 'POST', body: JSON.stringify(body) });
-        mostrarToast('Guardado correctamente');
-        // Auto-buscar portada solo al crear
-        if (TMDB_TOKEN) {
-          try {
-            const esSerie = body.clase === 'serie';
-            const data = await buscarPosterTMDb(body.pelicula, esSerie);
-            if (data && data.results && data.results.length === 1) {
-              const poster = data.results[0].poster_path;
-              if (poster) {
-                await api('/' + registro.id, { method: 'PATCH', body: JSON.stringify({ poster }) });
-                registro.poster = poster;
-                mostrarToast('Portada asignada');
-              }
-            } else if (data && data.results && data.results.length > 1) {
-              cerrarModal();
-              abrirSelectorPoster(data.results, registro);
-              await cargar();
-              return;
-            }
-          } catch (_) {
-            // Si TMDB falla, continúa sin asignar portada
-          }
-        }
-      } else {
-        registro = await api('/' + idEditando, { method: 'PATCH', body: JSON.stringify(body) });
-        mostrarToast('Guardado correctamente');
-      }
-      await cargar();
-      cerrarModal();
-      setTimeout(() => {
-        if (registro) abrirDetalle(registro);
-      }, 250);
-    } catch (err) {
-      mostrarToast('Error: ' + err.message);
-    }
-  }
-
-  async function eliminar(id, nombre) {
-    if (!confirm('¿Eliminar "' + nombre + '"?')) return;
-    try {
-      await api('/' + id, { method: 'DELETE' });
-      mostrarToast('Eliminado');
-      await cargar();
-    } catch (err) {
-      mostrarToast('Error: ' + err.message);
-    }
-  }
-
-  const ESTADOS = ['Visto', 'Falta ver', 'Ver otra vez', 'Urgente', 'Viendo'];
-  const CLASES = [
-    { valor: 'película', etiqueta: 'Película', icono: 'ti ti-device-tv' },
-    { valor: 'serie', etiqueta: 'Serie', icono: 'ti ti-armchair' }
-  ];
-  // 0 = sin orden, 1 = A-Z, 2 = Z-A
-  let ordenAZ = 0;
-  let ordenAleatorio = localStorage.getItem('ordenAleatorio') === '1';
-  let ordenMezclado = null; // ids en orden sorteado
-  let claveOrden = ''; // filtros con los que se generó el sorteo
-
-  function resetCargaInfinita() {
-    visiblesMostrados = LOTE;
-  }
-
-  function construirFiltros() {
-    $filtros.innerHTML = '';
-    const filaEstado = document.createElement('div');
-    filaEstado.className = 'fila-filtros';
-    const etiqueta = document.createElement('span');
-    etiqueta.className = 'etiqueta-filtros';
-    etiqueta.innerHTML = '<i class="ti ti-filter-code"></i> Filtros:';
-    filaEstado.appendChild(etiqueta);
-    const botones = [{ etiqueta: 'Todos', valor: '' }]
-      .concat(ESTADOS.map(v => ({ etiqueta: v, valor: v })));
-    for (const b of botones) {
-      const btn = document.createElement('button');
-      btn.className = 'chip' + (filtroVisto === b.valor ? ' activo' : '');
-      btn.textContent = b.etiqueta;
-      btn.onclick = () => {
-        filtroVisto = filtroVisto === b.valor ? '' : b.valor;
-        construirFiltros();
-        resetCargaInfinita();
-        render();
       };
-      filaEstado.appendChild(btn);
-    }
-    // chip de orden
-    const chipOrden = document.createElement('button');
-    chipOrden.className = 'chip' + (ordenAZ ? ' activo' : '');
-    chipOrden.innerHTML = ordenAZ === 1
-      ? '<i class="ti ti-sort-a-z"></i> A-Z'
-      : ordenAZ === 2
-        ? '<i class="ti ti-sort-z-a"></i> Z-A'
-        : '<i class="ti ti-sort-a-z"></i> A-Z';
-    chipOrden.onclick = () => {
-      ordenAZ = (ordenAZ + 1) % 3;
-      construirFiltros();
-      resetCargaInfinita();
-      render();
-    };
-    filaEstado.appendChild(chipOrden);
-    // chip de recomendados
-    const chipReco = document.createElement('button');
-    chipReco.className = 'chip' + (filtroRecomendado ? ' activo' : '');
-    chipReco.innerHTML = '<i class="ti ti-thumb-up"></i> Yo recomiendo';
-    chipReco.onclick = () => {
-      filtroRecomendado = filtroRecomendado ? '' : 'si';
-      filtroRecomendadoMe = '';
-      construirFiltros();
-      resetCargaInfinita();
-      render();
-    };
-    filaEstado.appendChild(chipReco);
-    // chip de me recomiendan
-    const chipRecoMe = document.createElement('button');
-    chipRecoMe.className = 'chip' + (filtroRecomendadoMe ? ' activo' : '');
-    chipRecoMe.innerHTML = '<i class="ti ti-thumb-up"></i> Me recomendaron';
-    chipRecoMe.onclick = () => {
-      filtroRecomendadoMe = filtroRecomendadoMe ? '' : 'si';
-      filtroRecomendado = '';
-      construirFiltros();
-      resetCargaInfinita();
-      render();
-    };
-    filaEstado.appendChild(chipRecoMe);
-    $filtros.appendChild(filaEstado);
-
-    const filaClase = document.createElement('div');
-    filaClase.className = 'fila-filtros';
-    filaClase.style.marginLeft = 'auto';
-    const etiquetaClase = document.createElement('span');
-    etiquetaClase.className = 'etiqueta-filtros';
-    etiquetaClase.innerHTML = '<i class="ti ti-category"></i> Clase:';
-    filaClase.appendChild(etiquetaClase);
-    for (const c of CLASES) {
-      const activo = filtroClase === c.valor;
-      const btn = document.createElement('button');
-      btn.className = 'chip' + (activo ? ' activo' : '');
-      const i = document.createElement('i');
-      i.className = c.icono;
-      btn.appendChild(i);
-      btn.appendChild(document.createTextNode(' ' + c.etiqueta));
-      btn.onclick = () => {
-        filtroClase = filtroClase === c.valor ? '' : c.valor;
-        construirFiltros();
-        resetCargaInfinita();
-        render();
-      };
-      filaClase.appendChild(btn);
-    }
-    // chip de desordenar lista
-    const chipAleatorio = document.createElement('button');
-    chipAleatorio.className = 'chip' + (ordenAleatorio ? ' activo' : '');
-    chipAleatorio.innerHTML = '<i class="ti ti-arrows-shuffle"></i> Al azar';
-    chipAleatorio.title = 'Desordenar lista';
-    chipAleatorio.onclick = () => {
-      ordenAleatorio = !ordenAleatorio;
-      localStorage.setItem('ordenAleatorio', ordenAleatorio ? '1' : '0');
-      construirFiltros();
-      resetCargaInfinita();
-      render();
-    };
-    filaClase.appendChild(chipAleatorio);
-    $filtros.appendChild(filaClase);
+      const vigilante = setInterval(() => {
+        if (popup && popup.closed) terminar(reject, new Error('cancelado'));
+      }, 700);
+      const timeout = setTimeout(() => terminar(reject, new Error('La autenticación tardó demasiado. Inténtalo de nuevo.')), 180000);
+      function limpiar() {
+        es.removeEventListener('@oauth2', alRecibir);
+        clearInterval(vigilante);
+        clearTimeout(timeout);
+      }
+      es.addEventListener('@oauth2', alRecibir);
+    });
   }
 
-  let debounceTimer = null;
-  $buscar.addEventListener('input', e => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      filtro = e.target.value.trim();
-      resetCargaInfinita();
-      render();
-    }, 300);
-  });
+  // --- Flujo completo --------------------------------------------------------
+  async function iniciarSesion() {
+    if (ocupado) return;
+    ocupado = true;
+    $btn.disabled = true;
+    mostrarEstado(conSpinner('Conectando…'));
 
-  $buscar.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    clearTimeout(debounceTimer);
-    filtro = e.target.value.trim();
-    resetCargaInfinita();
-    render();
-  });
-
-  window.addEventListener('scroll', () => {
-    $btnSubir.classList.toggle('visible', window.scrollY > 300);
-    // carga infinita: cuando se acerca al final, muestra otros 20
-    if (cargandoLote) return;
-    const final = document.documentElement.scrollHeight - window.innerHeight;
-    if (window.scrollY >= final - 600) {
-      const total = document.querySelectorAll('#lista .tarjeta').length;
-      if (total >= visiblesMostrados) {
-        cargandoLote = true;
-        visiblesMostrados += LOTE;
-        render();
-        cargandoLote = false;
-      }
+    // El popup se abre de inmediato (antes de cualquier await) para que el
+    // navegador no lo bloquee.
+    const popup = window.open('', 'pb_oauth', 'width=520,height=680');
+    if (!popup) {
+      ocupado = false;
+      $btn.disabled = false;
+      mostrarEstado('<i class="ti ti-alert-triangle"></i> Tu navegador bloqueó la ventana emergente. Permite las ventanas emergentes e inténtalo de nuevo.', 'error');
+      return;
     }
-  }, { passive: true });
-  $btnSubir.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      popup.document.write('<p style="font-family:system-ui,sans-serif;padding:24px;color:#666">Cargando Google…</p>');
+    } catch (_) {}
 
-  document.getElementById('btnAgregar').onclick = abrirCrear;
-  document.getElementById('btnLimpiar').onclick = () => {
-    $buscar.value = '';
-    clearTimeout(debounceTimer);
-    filtro = '';
-    resetCargaInfinita();
-    render();
-    $buscar.focus();
-  };
-  document.getElementById('btnAleatorio').onclick = abrirAleatorio;
-  document.getElementById('carruselPrev').onclick = () => moverCarrusel(-1);
-  document.getElementById('carruselNext').onclick = () => moverCarrusel(1);
-  $overlayAleatorio.addEventListener('click', e => { if (e.target === $overlayAleatorio) cerrarAleatorio(); });
-  document.getElementById('btnAleaDetalle').onclick = () => {
-    cerrarAleatorio();
-    setTimeout(() => {
-      if (aleaActual) abrirDetalle(aleaActual);
-    }, 250);
-  };
-  document.getElementById('btnAleaOtra').onclick = () => {
-    cerrarAleatorio();
-    setTimeout(() => abrirAleatorio(), 250);
-  };
-  document.getElementById('btnCancelar').onclick = cerrarModal;
-  document.getElementById('btnEliminarPoster').onclick = () => {
-    $formulario.fPoster.value = '';
-    mostrarToast('Poster eliminado');
-  };
-  $formulario.fClase.addEventListener('change', actualizarLabelPelicula);
-  $fNotaSlider.addEventListener('input', () => { notaTocada = true; aplicarNotaSlider(); });
-  $fNotaSlider.addEventListener('change', () => { notaTocada = true; aplicarNotaSlider(); });
-  $btnLimpiarNota.onclick = () => sincronizarNotaSlider('');
-  $overlay.addEventListener('click', e => { if (e.target === $overlay) cerrarModal(); });
-  $overlayDetalle.addEventListener('click', e => { if (e.target === $overlayDetalle) cerrarDetalle(); });
-  document.getElementById('btnCerrarDetalle').onclick = cerrarDetalle;
-  document.getElementById('btnCerrarPoster').onclick = cerrarSelectorPoster;
-  $overlayPoster.addEventListener('click', e => { if (e.target === $overlayPoster) cerrarSelectorPoster(); });
-  document.getElementById('btnCopiarPelicula').onclick = () => {
-    const texto = $formulario.fPelicula.value;
-    if (!texto) return;
-    navigator.clipboard.writeText(texto).then(() => {
-      mostrarToast('Título copiado');
-    }).catch(() => {
-      mostrarToast('Error al copiar');
-    });
-  };
-  $btnCopiar.onclick = () => {
-    if (!detalleActual) return;
-    navigator.clipboard.writeText(detalleActual.pelicula).then(() => {
-      mostrarToast('Título copiado');
-    }).catch(() => {
-      mostrarToast('Error al copiar');
-    });
-  };
-  document.getElementById('btnEditarDesdeDetalle').onclick = () => {
-    cerrarDetalle();
-    setTimeout(() => {
-      if (detalleActual) abrirEditar(detalleActual);
-    }, 250);
-  };
-  $buscarEtiqueta.addEventListener('input', buscarEtiquetaDebounce);
-  document.getElementById('btnLimpiarEtiqueta').onclick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    $buscarEtiqueta.value = '';
-    clearTimeout(buscarEtiquetaDebounce._t);
-    $etiquetasResultados.innerHTML = '';
-    $buscarEtiqueta.focus();
-  };
-  // tooltip de plataforma: en táctil se muestra al tocar y se oculta al tocar fuera
-  document.addEventListener('click', (e) => {
-    const wrap = e.target.closest('.plataforma-tooltip-wrap');
-    document.querySelectorAll('.plataforma-tooltip-wrap.mostrar').forEach(w => {
-      if (w !== wrap) w.classList.remove('mostrar');
-    });
-    if (wrap) wrap.classList.toggle('mostrar');
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    cerrarDetalle();
-    cerrarModal();
-    cerrarSelectorPoster();
-    cerrarAleatorio();
-  });
-  $formulario.addEventListener('submit', guardar);
+    let es = null;
+    try {
+      const realtime = await conectarRealtime();
+      es = realtime.es;
 
-  construirFiltros();
+      const resMethods = await fetch(PB + '/api/collections/' + COLECCION + '/auth-methods');
+      if (!resMethods.ok) throw new Error('No se pudieron consultar los métodos de acceso.');
+      const methods = await resMethods.json();
+      const provider = ((methods.oauth2 && methods.oauth2.providers) || []).find(p => p.name === PROVIDER);
+      if (!provider) throw new Error('El proveedor Google no está habilitado.');
 
-  cargarPlataformas().catch(err => console.error('Error cargando plataformas', err));
-  cargarEtiquetas().catch(err => console.error('Error cargando etiquetas', err));
+      const url = new URL(provider.authURL + encodeURIComponent(REDIRECT_URL));
+      url.searchParams.set('state', realtime.clientId);
 
-  cargar().catch(err => {
-    $lista.innerHTML = '';
-    const v = document.createElement('div');
-    v.className = 'vacio';
-    v.textContent = 'No se pudo cargar: ' + err.message;
-    $lista.appendChild(v);
-    const $loader = document.getElementById('loader');
-    $loader.classList.add('hidden');
-    setTimeout(() => { $loader.style.display = 'none'; }, 500);
-  });
+      mostrarEstado(conSpinner('Esperando a Google…'));
+      popup.location.href = url.toString();
+
+      const code = await esperarCodigo(es, realtime.clientId, popup);
+
+      mostrarEstado(conSpinner('Validando sesión…'));
+      const resAuth = await fetch(PB + '/api/collections/' + COLECCION + '/auth-with-oauth2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: PROVIDER,
+          code: code,
+          codeVerifier: provider.codeVerifier,
+          redirectURL: REDIRECT_URL
+        })
+      });
+      if (!resAuth.ok) {
+        let msg = 'No se pudo completar el inicio de sesión.';
+        try { const e = await resAuth.json(); if (e && e.message) msg = e.message; } catch (_) {}
+        throw new Error(msg);
+      }
+      const datos = await resAuth.json();
+      localStorage.setItem(CLAVE_SESION, JSON.stringify({
+        token: datos.token,
+        record: datos.record,
+        meta: datos.meta || null,
+        user_id: datos.record.id,
+        email: datos.record.email || '',
+        nombre: datos.record.name || ''
+      }));
+
+      mostrarEstado('<i class="ti ti-circle-check"></i> ¡Listo! Entrando…', 'exito');
+      location.replace('/peliculas.html');
+    } catch (err) {
+      try { if (popup && !popup.closed) popup.close(); } catch (_) {}
+      if (err && err.message === 'cancelado') {
+        mostrarEstado('<i class="ti ti-info-circle"></i> Inicio de sesión cancelado.', '');
+      } else {
+        mostrarEstado('<i class="ti ti-alert-triangle"></i> ' + (err.message || 'Ocurrió un error.'), 'error');
+      }
+      ocupado = false;
+      $btn.disabled = false;
+    } finally {
+      if (es) es.close();
+    }
+  }
+
+  // Si ya hay una sesión válida, saltar directo a la app.
+  if (tokenValido(leerSesion())) {
+    mostrarEstado(conSpinner('Sesión activa, entrando…'));
+    location.replace('/peliculas.html');
+  }
+
+  $btn.addEventListener('click', iniciarSesion);
 </script>
 
 </body>
