@@ -401,10 +401,6 @@
   const BASE = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
   const STEAM_PROXY = 'https://steam-db.infocatsoluciones.deno.net/api';
 
-  function authHeaders(extra) {
-    return PBSesion.headers(extra);
-  }
-
   function idUsuario() {
     return PBSesion.id();
   }
@@ -488,9 +484,9 @@
   }
 
   async function api(path = '', options = {}) {
-    const res = await fetch(BASE + path, {
+    const res = await PBSesion.fetch(BASE + path, {
       ...options,
-      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
+      headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers)
     });
     if (res.status === 401) { PBSesion.cerrar(); throw new Error('Sesión expirada'); }
     if (!res.ok) {

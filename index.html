@@ -113,6 +113,7 @@
     if (oscuro) document.documentElement.classList.add('tema-oscuro');
   })();
 </script>
+<script src="/pb-sesion.js"></script>
 </head>
 <body>
 
@@ -165,7 +166,6 @@
   const PB = 'https://pb.infocatsoluciones.com';
   const COLECCION = 'users';
   const PROVIDER = 'google';
-  const CLAVE_SESION = 'pb_auth';
   const REDIRECT_URL = PB + '/api/oauth2-redirect';
 
   const $btn = document.getElementById('btnGoogle');
@@ -175,20 +175,6 @@
   document.getElementById('appVersion').textContent = __APP_VERSION__;
 
   let ocupado = false;
-
-  function tokenValido(sesion) {
-    if (!sesion || !sesion.token) return false;
-    try {
-      const payload = JSON.parse(atob(sesion.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return !payload.exp || payload.exp * 1000 > Date.now();
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function leerSesion() {
-    try { return JSON.parse(localStorage.getItem(CLAVE_SESION) || 'null'); } catch (_) { return null; }
-  }
 
   function mostrarEstado(html, tipo) {
     $estado.className = 'login-estado' + (tipo ? ' ' + tipo : '');
@@ -313,14 +299,7 @@
         throw new Error(msg);
       }
       const datos = await resAuth.json();
-      localStorage.setItem(CLAVE_SESION, JSON.stringify({
-        token: datos.token,
-        record: datos.record,
-        meta: datos.meta || null,
-        user_id: datos.record.id,
-        email: datos.record.email || '',
-        nombre: datos.record.name || ''
-      }));
+      PBSesion.guardar(datos);
 
       mostrarEstado('<i class="ti ti-circle-check"></i> ¡Listo! Entrando…', 'exito');
       location.replace('/peliculas.html');
@@ -339,7 +318,7 @@
   }
 
   // Si ya hay una sesión válida, saltar directo a la app.
-  if (tokenValido(leerSesion())) {
+  if (PBSesion.leer()) {
     mostrarEstado(conSpinner('Sesión activa, entrando…'));
     location.replace('/peliculas.html');
   }

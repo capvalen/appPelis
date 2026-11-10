@@ -211,12 +211,7 @@
   const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
   const BASE_PELICULAS = 'https://pb.infocatsoluciones.com/api/collections/is_peliculas/records';
 
-  function authHeaders(extra) {
-    return PBSesion.headers(extra);
-  }
-
-  const $grid = document.getElementById('grid');
-  const $mapa = document.getElementById('mapa');
+  const $grid = document.getElementById('grid');  const $mapa = document.getElementById('mapa');
   const $buscar = document.getElementById('buscar');
   const $contador = document.getElementById('contador');
   const $btnSubir = document.getElementById('btnSubir');
@@ -230,9 +225,9 @@
   }
 
   async function api(path = '', options = {}) {
-    const res = await fetch(BASE_PELICULAS + path, {
+    const res = await PBSesion.fetch(BASE_PELICULAS + path, {
       ...options,
-      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
+      headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers)
     });
     if (res.status === 401) { PBSesion.cerrar(); throw new Error('Sesión expirada'); }
     if (!res.ok) {
@@ -250,7 +245,7 @@
     let page = 1;
     let items = [];
     while (true) {
-      const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page, { headers: authHeaders() });
+      const res = await PBSesion.fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
       if (!res.ok) break;
       const data = await res.json();
       items = items.concat(data.items || []);

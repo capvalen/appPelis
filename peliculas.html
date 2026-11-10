@@ -483,7 +483,7 @@
   }
 
   async function cargarPlataformas() {
-    const res = await fetch(BASE_PLATAFORMAS + '?perPage=200', { headers: authHeaders() });
+    const res = await PBSesion.fetch(BASE_PLATAFORMAS + '?perPage=200');
     if (res.status === 401) { cerrarSesion(); throw new Error('Sesión expirada'); }
     if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
     const data = await res.json();
@@ -559,7 +559,7 @@
       // busca en el backend las etiquetas que coinciden con el término (nombre o alternativo)
       const termino = q.replace(/"/g, '');
       const filtro = '(etiqueta ~ "' + termino + '" || alternativo ~ "' + termino + '")';
-      const res = await fetch(BASE_ETIQUETAS + '?perPage=8&sort=etiqueta&filter=' + encodeURIComponent(filtro), { headers: authHeaders() });
+      const res = await PBSesion.fetch(BASE_ETIQUETAS + '?perPage=8&sort=etiqueta&filter=' + encodeURIComponent(filtro));
       if (!res.ok) return;
       const data = await res.json();
       const candidatas = (data.items || []).filter(e => !etiquetasSeleccionadas.includes(e.id));
@@ -585,10 +585,6 @@
     buscarEtiquetaDebounce._t = setTimeout(renderEtiquetasResultados, 300);
   }
 
-  function authHeaders(extra) {
-    return PBSesion.headers(extra);
-  }
-
   function idUsuario() {
     return PBSesion.id();
   }
@@ -598,9 +594,9 @@
   }
 
   async function api(path = '', options = {}) {
-    const res = await fetch(BASE + path, {
+    const res = await PBSesion.fetch(BASE + path, {
       ...options,
-      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
+      headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers)
     });
     if (res.status === 401) { cerrarSesion(); throw new Error('Sesión expirada'); }
     if (!res.ok) {

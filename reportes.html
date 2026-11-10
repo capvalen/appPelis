@@ -325,10 +325,6 @@
   const BASE_PLATAFORMAS = 'https://pb.infocatsoluciones.com/api/collections/is_plataformas/records';
   const BASE_ETIQUETAS = 'https://pb.infocatsoluciones.com/api/collections/is_etiquetas/records';
 
-  function authHeaders(extra) {
-    return PBSesion.headers(extra);
-  }
-
   const $lista = document.getElementById('lista');
   const $buscar = document.getElementById('buscar');
   const $contador = document.getElementById('contador');
@@ -508,9 +504,9 @@
   }
 
   async function api(path = '', options = {}) {
-    const res = await fetch(BASE + path, {
+    const res = await PBSesion.fetch(BASE + path, {
       ...options,
-      headers: authHeaders(Object.assign({ 'Content-Type': 'application/json' }, options.headers))
+      headers: Object.assign({ 'Content-Type': 'application/json' }, options.headers)
     });
     if (res.status === 401) { PBSesion.cerrar(); throw new Error('Sesión expirada'); }
     if (!res.ok) {
@@ -525,7 +521,7 @@
   }
 
   async function cargarPlataformas() {
-    const res = await fetch(BASE_PLATAFORMAS + '?perPage=200', { headers: authHeaders() });
+    const res = await PBSesion.fetch(BASE_PLATAFORMAS + '?perPage=200');
     if (!res.ok) throw new Error('Error cargando plataformas ' + res.status);
     const data = await res.json();
     plataformas = data.items || [];
@@ -552,7 +548,7 @@
     let items = [];
     try {
       while (true) {
-        const res = await fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page, { headers: authHeaders() });
+        const res = await PBSesion.fetch(BASE_ETIQUETAS + '?perPage=200&sort=etiqueta&page=' + page);
         if (!res.ok) break;
         const data = await res.json();
         items = items.concat(data.items || []);
