@@ -1443,7 +1443,8 @@
       if (aleaActual) abrirDetalle(aleaActual);
     }, 250);
   };
-  document.getElementById('btnAleaOtra').onclick = () => {
+  document.getElementById('btnAleaOtra').onclick = (e) => {
+    e.currentTarget.blur();
     cerrarAleatorio();
     setTimeout(() => abrirAleatorio(), 250);
   };
