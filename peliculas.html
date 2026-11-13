@@ -343,9 +343,9 @@
     </div>
     <div class="estado-centrado" id="dVisto"></div>
     <div class="etiquetas-detalle" id="dEtiquetasDetalle"></div>
-    <div class="detalle-fila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
+    <div class="detalle-fila" id="dDatoFila"><span class="etiqueta">Información</span><span class="valor" id="dDato"></span></div>
     <div class="detalle-fila" id="dLinkFila" style="display:none"><span class="etiqueta">Link</span><span class="valor"><a class="btn-ver-link" id="dLink" href="#" target="_blank" rel="noopener"><i class="ti ti-external-link"></i> Click para Ver</a></span></div>
-    <div class="detalle-fila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
+    <div class="detalle-fila" id="dNotaFila"><span class="etiqueta">Calificación</span><span class="valor" id="dNota"></span></div>
     <div class="detalle-fila" id="dPlataformaFila" style="display:none"><span class="valor" id="dPlataforma"></span></div>
     <div class="recomendada-centrado" id="dRecomendableFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Recomendada</span></div>
     <div class="recomendada-centrado" id="dRecomiendanFila" style="display:none"><span class="btn-recomendar on"><i class="ti ti-thumb-up"></i> Me recomiendan</span></div>
@@ -408,12 +408,14 @@
   const $btnCopiar = document.getElementById('btnCopiar');
   const $dVisto = document.getElementById('dVisto');
   const $dDato = document.getElementById('dDato');
+  const $dDatoFila = document.getElementById('dDatoFila');
   const $dLinkFila = document.getElementById('dLinkFila');
   const $dLink = document.getElementById('dLink');
   const $dPlataformaFila = document.getElementById('dPlataformaFila');
   const $dPlataforma = document.getElementById('dPlataforma');
   const $dEtiquetasDetalle = document.getElementById('dEtiquetasDetalle');
   const $dNota = document.getElementById('dNota');
+  const $dNotaFila = document.getElementById('dNotaFila');
   const $dRecomendableFila = document.getElementById('dRecomendableFila');
   const $dRecomiendanFila = document.getElementById('dRecomiendanFila');
   const $overlayAleatorio = document.getElementById('overlayAleatorio');
@@ -881,6 +883,7 @@
     $dPelicula.textContent = tituloConAnio(p);
     $dVisto.innerHTML = badgeClase(p.clase) + badge(p.visto);
     $dDato.textContent = p.dato ? p.dato : '—';
+    $dDatoFila.style.display = p.dato ? '' : 'none';
     const link = (p.link || '').trim();
     if (link) {
       $dLink.href = link;
@@ -901,6 +904,7 @@
     $dNota.innerHTML = (!isNaN(notaNum) && notaNum > 0)
       ? '<i class="' + iconoNota(notaNum) + ' estrella"></i> ' + notaNum
       : '—';
+    $dNotaFila.style.display = (!isNaN(notaNum) && notaNum > 0) ? '' : 'none';
     const idsEtiquetas = Array.isArray(p.etiquetas) ? p.etiquetas : (p.etiquetas || '').split(',').filter(Boolean);
     if (idsEtiquetas.length) {
       // usa el expand del backend si está disponible, sino el catálogo local (15 iniciales + agregadas)
@@ -911,7 +915,7 @@
         const e = etiquetas.find(x => x.id === id);
         return e ? e.etiqueta : id;
       });
-      $dEtiquetasDetalle.innerHTML = nombres.map(n => '<span>' + n + '</span>').join('<span class="separador"> · </span>');
+      $dEtiquetasDetalle.innerHTML = nombres.map((n, i) => (i === 0 ? '<i class="ti ti-tag etiqueta-icono"></i>' : '') + '<span>' + n + '</span>').join('<span class="separador"> · </span>');
       $dEtiquetasDetalle.style.display = '';
     } else {
       $dEtiquetasDetalle.textContent = '';
